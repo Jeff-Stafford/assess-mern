@@ -1,0 +1,330 @@
+import express from 'express';
+import {
+  authenticate,
+  authorizeUser,
+  hasConfigureUsersOrGeneralVoicemailPermission,
+  hasConfigureUsersPermission
+} from '../middleware/auth';
+import {
+  createIdValidator,
+  createTenantValidator
+} from '../middleware/validator';
+import { isUserAlreadySubscribedToCustomer } from '../middleware/customer-user';
+import {
+  checkForGreetingTenancy,
+  checkForUserOwnThread,
+  checkIfCustomerBelongsToDPAccount,
+  isReadyToCreate,
+  prepareThreadNotesPagination
+} from '../middleware/user';
+import { checkForGivenReaction } from '../middleware/emoji-reaction';
+import { RequestParamIdPlaceholder } from '../types';
+import {
+  assignPermissionToUser,
+  changeCustomerReadStatus,
+  changeUserAvatar,
+  changeUserBasicData,
+  changeUserVoicemailGreeting,
+  checkEmailAvailability,
+  createOrUpdateUserCellPhone,
+  createUser,
+  createUserVoicemailGreeting,
+  deactivateUser,
+  followUser,
+  getAllUsersByAccount,
+  getCustomerThread,
+  getCustomerThreads,
+  getHunts,
+  getLoggedInUser,
+  getPermissionsByUser,
+  getUser,
+  getUserCellPhone,
+  getUserFollowsWithOtherUsers,
+  getUserTeamMembers,
+  getUserVoicemailGreeting,
+  getUserVoicemailGreetings,
+  getUserVoicemails,
+  readUserVoicemail,
+  removePermissionFromUser,
+  subscribeToCustomer,
+  unFollowUser
+} from '../controllers/user';
+import DPUser from '../models/DPUser';
+import {
+  changeEmojiReaction,
+  createEmojiReaction,
+  deleteEmojiReaction,
+  getEmojiReactionsForNote
+} from '../controllers/emoji-reaction';
+
+const userRouter = express.Router();
+
+const validateUserId = createIdValidator([RequestParamIdPlaceholder.USER_ID]);
+const validateUserAndCustomerId = createIdValidator([
+  RequestParamIdPlaceholder.USER_ID,
+  RequestParamIdPlaceholder.CUSTOMER_ID
+]);
+const validateUserCustomerAndNoteId = createIdValidator([
+  RequestParamIdPlaceholder.USER_ID,
+  RequestParamIdPlaceholder.CUSTOMER_ID,
+  RequestParamIdPlaceholder.NOTE_ID
+]);
+const validateUserCustomerNoteAndEmojiId = createIdValidator([
+  RequestParamIdPlaceholder.USER_ID,
+  RequestParamIdPlaceholder.CUSTOMER_ID,
+  RequestParamIdPlaceholder.NOTE_ID,
+  RequestParamIdPlaceholder.EMOJI_ID
+]);
+const validateUserAndPermissionId = createIdValidator([
+  RequestParamIdPlaceholder.USER_ID,
+  RequestParamIdPlaceholder.PERMISSION_ID
+]);
+const validateUserAndCallId = createIdValidator([
+  RequestParamIdPlaceholder.USER_ID,
+  RequestParamIdPlaceholder.CALL_ID
+]);
+
+const validateUserTenancy = createTenantValidator(
+  DPUser,
+  RequestParamIdPlaceholder.USER_ID
+);
+const validateFollowingUserTenancy = createTenantValidator(
+  DPUser,
+  RequestParamIdPlaceholder.FOLLOWING_USER_ID
+);
+
+userRouter.get(
+  '/',
+  authenticate,
+  hasConfigureUsersOrGeneralVoicemailPermission,
+  getAllUsersByAccount
+);
+userRouter.get('/me', authenticate, getLoggedInUser);
+userRouter.get('/email-availability', authenticate, checkEmailAvailability);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}`,
+  validateUserId,
+  authenticate,
+  hasConfigureUsersPermission,
+  getUser
+);
+userRouter.post(
+  `/`,
+  authenticate,
+  isReadyToCreate,
+  hasConfigureUsersPermission,
+  createUser
+);
+userRouter.put(
+  `/:${RequestParamIdPlaceholder.USER_ID}`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  changeUserBasicData
+);
+userRouter.delete(
+  `/:${RequestParamIdPlaceholder.USER_ID}`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersPermission,
+  deactivateUser
+);
+userRouter.put(
+  `/:${RequestParamIdPlaceholder.USER_ID}/avatar`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  changeUserAvatar
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/cell-phone`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  getUserCellPhone
+);
+userRouter.post(
+  `/:${RequestParamIdPlaceholder.USER_ID}/cell-phone`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  createOrUpdateUserCellPhone
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customer-threads`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  getCustomerThreads
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customer-threads/:${RequestParamIdPlaceholder.CUSTOMER_ID}`,
+  validateUserAndCustomerId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  prepareThreadNotesPagination,
+  checkIfCustomerBelongsToDPAccount,
+  getCustomerThread
+);
+userRouter.post(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customer-threads/:${RequestParamIdPlaceholder.CUSTOMER_ID}/notes/:${RequestParamIdPlaceholder.NOTE_ID}/emoji-reactions`,
+  validateUserCustomerAndNoteId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  checkForGivenReaction,
+  createEmojiReaction
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customer-threads/:${RequestParamIdPlaceholder.CUSTOMER_ID}/notes/:${RequestParamIdPlaceholder.NOTE_ID}/emoji-reactions`,
+  validateUserCustomerAndNoteId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  getEmojiReactionsForNote
+);
+userRouter.patch(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customer-threads/:${RequestParamIdPlaceholder.CUSTOMER_ID}/notes/:${RequestParamIdPlaceholder.NOTE_ID}/emoji-reactions/:${RequestParamIdPlaceholder.EMOJI_ID}`,
+  validateUserCustomerNoteAndEmojiId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  checkForGivenReaction,
+  changeEmojiReaction
+);
+userRouter.delete(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customer-threads/:${RequestParamIdPlaceholder.CUSTOMER_ID}/notes/:${RequestParamIdPlaceholder.NOTE_ID}/emoji-reactions/:${RequestParamIdPlaceholder.EMOJI_ID}`,
+  validateUserCustomerNoteAndEmojiId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  deleteEmojiReaction
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/team-members`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  getUserTeamMembers
+);
+userRouter.post(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customers/:${RequestParamIdPlaceholder.CUSTOMER_ID}/subscribe`,
+  validateUserAndCustomerId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  isUserAlreadySubscribedToCustomer,
+  subscribeToCustomer
+);
+userRouter.patch(
+  `/:${RequestParamIdPlaceholder.USER_ID}/customers/:${RequestParamIdPlaceholder.CUSTOMER_ID}/read-status`,
+  validateUserAndCustomerId,
+  authenticate,
+  checkForUserOwnThread,
+  authorizeUser,
+  changeCustomerReadStatus
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/hunts`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersPermission,
+  getHunts
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/permissions`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersPermission,
+  getPermissionsByUser
+);
+userRouter.post(
+  `/:${RequestParamIdPlaceholder.USER_ID}/permissions`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersOrGeneralVoicemailPermission,
+  assignPermissionToUser
+);
+userRouter.delete(
+  `/:${RequestParamIdPlaceholder.USER_ID}/permissions/:${RequestParamIdPlaceholder.PERMISSION_ID}`,
+  validateUserAndPermissionId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersOrGeneralVoicemailPermission,
+  removePermissionFromUser
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/follows`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersPermission,
+  getUserFollowsWithOtherUsers
+);
+userRouter.post(
+  `/:${RequestParamIdPlaceholder.USER_ID}/follows`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  hasConfigureUsersPermission,
+  followUser
+);
+userRouter.delete(
+  `/:${RequestParamIdPlaceholder.USER_ID}/follows/:${RequestParamIdPlaceholder.FOLLOWING_USER_ID}`,
+  validateUserId,
+  authenticate,
+  validateUserTenancy,
+  validateFollowingUserTenancy,
+  hasConfigureUsersPermission,
+  unFollowUser
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/voicemail-greetings`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  getUserVoicemailGreetings
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/voicemail-greeting`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  getUserVoicemailGreeting
+);
+userRouter.patch(
+  `/:${RequestParamIdPlaceholder.USER_ID}/voicemail-greeting`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  checkForGreetingTenancy,
+  changeUserVoicemailGreeting
+);
+userRouter.post(
+  `/:${RequestParamIdPlaceholder.USER_ID}/voicemail-greeting`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  createUserVoicemailGreeting
+);
+userRouter.get(
+  `/:${RequestParamIdPlaceholder.USER_ID}/voicemails`,
+  validateUserId,
+  authenticate,
+  authorizeUser,
+  getUserVoicemails
+);
+userRouter.patch(
+  `/:${RequestParamIdPlaceholder.USER_ID}/voicemails/:${RequestParamIdPlaceholder.CALL_ID}/read`,
+  validateUserAndCallId,
+  authenticate,
+  authorizeUser,
+  readUserVoicemail
+);
+
+export default userRouter;
