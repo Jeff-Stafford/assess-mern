@@ -1,0 +1,1287 @@
+p. <img class="logo logo-ovf" src="/static/api/ovf-logo.png" width="230px"/><img class="logo logo-usvote" src="/static/api/usvote-logo.png" width="300px"/>
+
+h1. Election Official Directory API
+
+h2. Overview
+
+p. This document is a brief technical guide to using the *EOD API* to interface with the
+core EOD application service for purposes of building a customer user interface.
+
+h2. Table of Contents
+
+{toc:maxLevel=2|style=circle}
+
+h2. Changelog
+
+table(table table-condensed).
+|<_. Revision|<_. Date|<_. Author|<_.Notes|
+|^0.11|^10/22/2018|^Bogdan Kulbida|^Add Main Office Email, Main Office Phone, Main Office Fax.|
+|^0.10|^05/03/2018|^Bogdan Kulbida|^Rename `office_name` to `title` in `Officers` collection.|
+|^0.9|^04/20/2018|^Bogdan Kulbida|^Added Officials GEO-ID information.|
+|^0.8|^12/13/2017|^Ian Brown|^Reworked  `Offices`, `Addresses` and `Officials` again to properly reflect desired structure.|
+|^0.7|^12/08/2017|^Ian Brown|^Changed underlying data structures for `Offices`, `Addresses` and `Officials` to support setting functions for addresses and tying officials to addresses.|
+|^0.6|^07/21/2016|^Pavel Larkin|^Added `Ignore rule` section. Added `Additional addresses` information.|
+|^0.5|^06/21/2016|^Pavel Larkin|^Added Basic filtering.|
+|^0.4|^02/27/2015|^Pavel Larkin|^Added counties and municipalities endpoints. Added new fields to region entity.|
+|^0.3|^07/15/2014|^Pavel Larkin|^Change API URL, fix doc styles.|
+|^0.2|^06/11/2014|^Pavel Larkin|^Added %(field-value)state.abbr% field to the state resource.<br/>Added %(field-value)state__abbr% filter to the region resource.|
+|^0.1|^06/06/2014|^Pavel Larkin|^Initial version.|
+
+h1. General Considerations for RESTFul API
+
+p. All api requests are RESTFul. Please see following links for more background.
+
+h2. RESTFul Resources on the Web
+
+# "WikiPedia":http://en.wikipedia.org/wiki/Representational_State_Transfer This is good base article and also has good links to other articles
+# "Basic from IBM Developer Works":https://www.ibm.com/developerworks/webservices/library/ws-restful Good fundamental introduction
+# "RESTful HTTP in Practice":http://www.infoq.com/articles/designing-restful-http-apps-roth Good summary table of methods and response codes
+# "Google Data":http://code.google.com/apis/gdata/docs/2.0/reference.html Nice model to follow, provides model for authentication as well
+# "The Bible":http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm Fielding's article
+# "Good Book?":http://oreilly.com/catalog/9780596529260 It is an OReilly...
+
+h2. Request URLs
+
+p. Request URLs are composed from the protocol, host, context path, a resource path, and optional query parameters.
+
+bc. {{ api_url }}/states/1
+
+p. In this example the protocol is "https", the host "{{ api_host }}", the context path is "{{ api_suffix }}", the resource path is "/states/1", where the last portion of the path in this case identifies the state id.
+
+h2. Ignore Rule
+
+p. The API may add fields to response without changing versions number. When interacting with the API, clients must ignore unknown fields.
+
+h2. Query Parameters
+
+p. Additional parameters for any request MAY be passed via the query string portion of the request URL.
+
+p. Here is an example of a request with query parameters.
+
+bc. {{ api_url }}/regions?state=1
+
+p. In this example the request is for the first page of regions filtered by state.
+
+h3. Basic Filtering
+
+We also support filtering on the resources' fields. Valid filtering values are: "Django ORM filters":https://docs.djangoproject.com/en/dev/ref/models/querysets/#field-lookups (e.g. istartswith, exact, icontains).
+
+bc. {{ api_url }}/regions?county_name__istartswith=wash
+
+p. In this example the request is for the first page of regions filtered by county name starting with 'wash'.
+
+h2. Authorization
+
+p. Access to the API is secured using OAuth2 (two legged model). All requests must include an appropriately created *Authorization* header or pass an access token as query parameter.
+
+h3. Access to the API usign Authorization header
+
+You can pass *Authorization* header with *OAuth valid_access_token* value in HTTP request
+
+h4. Example
+
+bc. $ curl -v -H "Authorization: OAuth valid_access_token" {{ api_url }}/states/2
+*   Trying X.X.X.X...
+* Connected to api.usvotefoundation.org (X.X.X.X) port 80 (#0)
+> GET {{ api_suffix }}states/2 HTTP/1.1
+> User-Agent: curl/7.35.0
+> Host: api.usvotefoundation.org
+> Accept: */*
+> Authorization: OAuth valid_access_token
+>
+< HTTP/1.1 200 OK
+* Server nginx/1.4.6 (Ubuntu) is not blacklisted
+< Server: nginx/1.4.6 (Ubuntu)
+< Content-Type: application/json
+< Content-Length: 73
+< Connection: keep-alive
+< Expires: Mon, 05 Jun 2014 16:34:40 GMT
+< Vary: Accept
+< Last-Modified: Mon, 05 Jun 2014 15:34:40 GMT
+< Cache-Control: max-age=3600, s-maxage=3600
+< Date: Mon, 05 Jun 2014 15:35:23 GMT
+< X-Frame-Options: SAMEORIGIN
+<
+{
+    "id": 2,
+    "name": "Alaska",
+    "abbr": "AK",
+    "resource_uri": "{{ api_suffix }}states/2"
+}
+
+h3. Access to the API usign query parameter
+
+You can pass *oauth_consumer_key* query paramater with *valid_access_token* value
+
+h4. Example
+
+bc. $ curl -v {{ api_url }}/states/3?oauth_consumer_key=valid_access_token
+*   Trying X.X.X.X...
+* Connected to api.usvotefoundation.org (X.X.X.X) port 80 (#0)
+> GET {{ api_suffix }}states/3?oauth_consumer_key=valid_access_token HTTP/1.1
+> User-Agent: curl/7.35.0
+> Host: api.usvotefoundation.org
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+* Server nginx/1.4.6 (Ubuntu) is not blacklisted
+< Server: nginx/1.4.6 (Ubuntu)
+< Content-Type: application/json
+< Content-Length: 81
+< Connection: keep-alive
+< Expires: Mon, 05 Jun 2014 16:41:10 GMT
+< Vary: Accept
+< Last-Modified: Mon, 05 Jun 2014 15:41:10 GMT
+< Cache-Control: max-age=3600, s-maxage=3600
+< Date: Mon, 05 Jun 2014 15:41:10 GMT
+< X-Frame-Options: SAMEORIGIN
+<
+{
+    "id": 3,
+    "name": "American Samoa",
+    "resource_uri": "{{ api_suffix }}states/3"
+}
+
+h2. Cross Domain Concerns
+
+p. Access to the API is possible through either client (ie AJAX/Javascript) or server (ie PHP, server side logic). Note however that when making client requests, care must be taken to avoid cross domain restrictions. In such cases it may be necessary to use a proxy server or other strategy, such as JSONP, to avoid cross domain issues.
+
+h2. Collections
+
+p. Queries that can return more than 1 item in the response will be wrapped inside an "array" element. For example in JSON:
+
+bc. [
+    {"foo":1},
+    {"foo":2}
+]
+
+h2. Pagination
+
+p. Some resource paths may also support "meta" which allows for stepping through a large collection without returning it entirely. Resource paths that support pagination do so with "limit" and "offset" parameters.
+
+p. The format of the response to a resource path that supports pagination will be in a two part hash map, the first part, named "meta" will include a number of fields that describe the "total_count" collection size and convenience URL's to move through the collection. The second part of the map, named "objects" will include the actual data objects for that request, ie the current "page".
+
+h3. Pagination Convenience URL's
+
+* *offset* - current offset
+* *limit* - the number of objects per page
+* *total_count* - total objects
+* *previous* - A URI that refers to the immediately preceding page in a "paged collection"
+* *next* - A URI that refers to the immediately following page in a "paged collection"
+
+h3. Pagination Example
+
+bc. {
+    "meta": {
+        "limit": 20,
+        "offset": 0,
+        "previous": null,
+        "next": "{{ api_suffix }}regions?state=1&limit=20&offset=20",
+        "total_count": 68
+    },
+    "objects":[ {...}, ],
+}
+
+h2. Error Handling
+
+p. The API, being RESTFul, is reliant on standard HTTP status codes for error handling.
+
+h3. HTTP Status Codes
+
+p. The API returns the following HTTP status codes for every request:
+
+* *200 OK*: Success
+* *400 Bad Request*: The request was invalid. An accompanying error message will explain why.
+* *401 Unauthorized*: Missing or bad authentication.
+* *404 Not Found*: The resource requested, such as an actor, does not exist.
+* *409 Conflict*: The request would result in a resource conflict (ie email already exists)
+* *5xx Internal Server Error*: Something is broken.
+
+h3. Error Messages
+
+p. The API returns error messages in JSON format.
+
+bc. {
+    "error": "Invalid resource lookup data provided (mismatched type)."
+}
+
+h1. States
+
+p. Methods for working with state resources.
+
+h2. Get All States
+
+This method is used to retrieve all states.
+
+h3. URL
+
+bc. /states
+
+Supported Formats: *JSON*
+Supported Request Methods: *GET*
+
+h3. Parameters
+
+None
+
+h3. Example Request
+
+*GET* {{ api_url }}/states
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}states?limit=20&offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 55
+    },
+    "objects": [
+        {
+            "id": 1,
+            "abbr": "AL",
+            "name": "Alabama",
+            "resource_uri": "{{ api_suffix }}states/1"
+        },
+        {
+            "id": 2,
+            "abbr": "AK",
+            "name": "Alaska",
+            "resource_uri": "{{ api_suffix }}states/2"
+        },
+        {
+            "id": 3,
+            "abbr": "AS",
+            "name": "American Samoa",
+            "resource_uri": "{{ api_suffix }}states/3"
+        },
+        ...
+    ]
+}
+
+h2. Get Specific State
+
+This method is used to retrieve specific state by id. The ids used for states are the same as the state FIPS codes without the leading 0 for numbers less than 10.
+
+h3. URL
+
+bc. /states/<state_id>
+
+Supported Formats: *JSON*
+Supported Request Methods: *GET*
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Name|<(field-type)_. Type|<_. Description|
+|^*state_id*<br/>%{color:gray}^required^%|^Long|^identifies the state|
+
+h3. Example Request
+
+*GET* {{ api_url }}/states/1
+
+h3. Example Response
+
+bc. {
+    "id": 1,
+    "name": "Alabama",
+    "abbr": "AL",
+    "resource_uri": "{{ api_suffix }}states/1"
+}
+
+
+h1. Regions
+
+p. Methods for working with region resources.
+
+h2. Get Regions
+
+This method is used to retrieve all regions or specific regions by state.
+
+h3. URL
+
+bc. /regions[?state=<state_id>][?state_abbr=<abbr>][&county=<county>][&county_name=<county_name>][&municipality=<municipality>][&municipality_name=<municipality_name>][&municipality_type=<municipality_type>][&region_name=<region_name>][&state=<state>][&state_abbr=<state_abbr>][&state_name=<state_name>]
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Name|<(field-type)_. Type|<(field-type)_. Filter %{color:gray}^[1]^%|<_. Description|
+|^*county*<br/>%{color:gray}^optional^%|^Long|^ |^optionally regions filter by county id|
+|^*county_name*<br/>%{color:gray}^optional^%|^String|yes|^optionally regions filter by county name|
+|^*municipality*<br/>%{color:gray}^optional^%|^Long|^ |^optionally regions filter by municipality id|
+|^*municipality_name*<br/>%{color:gray}^optional^%|^String|yes|^optionally regions filter by municipality name|
+|^*municipality_type*<br/>%{color:gray}^optional^%|^String|yes|^optionally regions filter by municipality type|
+|^*region_name*<br/>%{color:gray}^optional^%|^String|yes|^optionally regions filter by region name|
+|^*state*<br/>%{color:gray}^optional^%|^Long|^ |^optionally regions filter by state id|
+|^*state_abbr* or *state__abbr*<br/>%{color:gray}^optional^%|^String|^ |^optionally regions filter by state abbreviation. See %(field-value)abbr% field on the state resource|
+|^*state_name*<br/>%{color:gray}^optional^%|^String|^ |^optionally regions filter by state name|
+
+p. [1] See "Basic Filtering":#BasicFiltering
+
+h3. Example Request (All Regions)
+
+{{ api_url }}/regions
+
+h3. Example Response
+
+{{ api_url }}/regions
+
+bc. {
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}regions?limit=20&offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 7437
+    },
+    "objects": [
+        {
+            "id": 487,
+            "county": "{{ api_suffix }}counties/1",
+            "county_name": "Washington",
+            "municipality": "{{ api_suffix }}municipalities/1",
+            "municipality_name": "munic",
+            "municipality_type": "type",
+            "region_name": "Autauga County",
+            "resource_uri": "{{ api_suffix }}regions/487",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+        "state_name": "Alabama"
+        },
+        {
+            "id": 488,
+            "county": null,
+            "county_name": null,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Baldwin County",
+            "resource_uri": "{{ api_suffix }}regions/488",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+            "state_name": "Alabama"
+        },
+        ...
+    ]
+}
+
+h3. Example Request (Specific Regions by State)
+
+*GET* {{ api_url }}/regions?state=1
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}regions?state=1&limit=20&offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 68
+    },
+    "objects": [
+        {
+            "county": "{{ api_suffix }}counties/1",
+            "county_name": "Washington",
+            "id": 487,
+            "municipality": "{{ api_suffix }}municipalities/1",
+            "municipality_name": "munic",
+            "municipality_type": "type",
+            "region_name": "Autauga County",
+            "resource_uri": "{{ api_suffix }}regions/487",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+            "state_name": "Alabama"
+        },
+        {
+            "county": null,
+            "county_name": null,
+            "id": 488,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Baldwin County",
+            "resource_uri": "{{ api_suffix }}regions/488",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+            "state_name": "Alabama"
+        },
+        ...
+    ]
+}
+
+h3. Example Request (Specific Regions by State Abbreviation)
+
+*GET* {{ api_url }}/regions?state_abbr=VT
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}regions?oauth_consumer_key=1&limit=20&state_abbr=VT&offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 246
+    },
+    "objects": [
+        {
+            "county": null,
+            "county_name": null,
+            "id": 4820,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Addison",
+            "resource_uri": "{{ api_suffix }}regions/4820",
+            "state": "{{ api_suffix }}states/50",
+            "state_abbr": "VT",
+            "state_name": "Vermont"
+        },
+        {
+            "county": null,
+            "county_name": null,
+            "id": 4821,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Albany",
+            "resource_uri": "{{ api_suffix }}regions/4821",
+            "state": "{{ api_suffix }}states/50",
+            "state_abbr": "VT",
+            "state_name": "Vermont"
+        },
+        ...
+    ]
+}
+
+h2. Get Specific Region
+
+This method is used to retrieve specific region by id.
+
+h3. URL
+
+bc. /regions/<region_id>
+
+Supported Formats: *JSON*
+Supported Request Methods: *GET*
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Name|<(field-type)_. Type|<_. Description|
+|^*region_id*<br/>%{color:gray}^required^%|^Long|^identifies the region|
+
+h3. Example Request
+
+*GET* {{ api_url }}/regions/496
+
+h3. Example Response
+
+bc. {
+    "id": 496,
+    "region_name": "Cherokee County",
+    "resource_uri": "{{ api_suffix }}regions/496",
+    "county": null,
+    "county_name": null,
+    "municipality": null,
+    "municipality_name": null,
+    "municipality_type": null,
+    "state": "{{ api_suffix }}states/1",
+    "state_abbr": "AL",
+    "state_name": "Alabama"
+}
+
+h1. Local Election Offices
+
+p. Methods for working with local election offices.
+
+h2. Get All Local Election Offices
+
+This method is used to retrieve all offices or specific offices by region.
+
+h3. URL
+
+bc. /offices[?region=<region_id>]
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Name|<(field-type)_. Type|<_. Description|
+|^*region_id*<br/>%{color:gray}^optional^%|^Long|^optionally offices filter by region|
+
+h3. Address Functions
+
+Information about what types of voters and methods the address serves
+
+table(table table-condensed).
+|<(field-name)_. Function Code|<_. Description|
+|^DOM_VR|^Domestic Voter Registration|
+|^DOM_REQ|^Domestic Voter Vote-by-Mail (Absentee) Ballot Request Address|
+|^DOM_RET|^Domestic Voter Vote-by-Mail (Absentee) Ballot Return Address|
+|^OVS_REQ|^Overseas/Military Voter Registration/Ballot Request Address|
+|^OVS_RET|^Overseas/Military Vote-by-Mail (Absentee) Ballot Return Address|
+
+h3. Example Request (All Offices)
+
+*GET* {{ api_url }}/offices
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 7972,
+        "next": "{{ api_suffix }}/offices?limit=20&offset=20",
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 487,
+            "updated": "2017-06-04T04:46:48Z",
+            "region": "{{ api_suffix }}/regions/487",
+            "email": "ovf-anonymized@test.com",
+            "website": "http://www.autaugaco.org",
+            "hours": "8a-4:30p, M-F Central time",
+            "notes": "If you have never registered to vote or have not kept your registration current, you must contact the Board of Registrars - see above contact information.",
+            "status": 1,
+            "addresses": [
+                {
+                    "id": 973,
+                    "address_to": "Board of Registrars",
+                    "street1": "218 N Court St",
+                    "street2": "",
+                    "city": "PRATTVILLE",
+                    "state": "AL",
+                    "zip": "36067",
+                    "zip4": "3041",
+                    "website": "",
+                    "is_physical": true,
+                    "is_regular_mail": false,
+                    "main_email": "example@domain.tld",
+                    "main_phone_number": "(432) 987-9999",
+                    "main_fax_number": "(234) 987-8888",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/1",
+                    "contacts": [
+                        {
+                            "id": 4834,
+                            "address_uri": "{{ api_suffix }}/addresses/973",
+                            "officer_uri": "{{ api_suffix }}/officials/1"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/973"
+                },
+                {
+                    "id": 974,
+                    "address_to": "Board of Registrars",
+                    "street1": "PO BOX 680036",
+                    "street2": "218 N Court St",
+                    "city": "PRATTVILLE",
+                    "state": "AL",
+                    "zip": "36068",
+                    "zip4": "3004",
+                    "website": "",
+                    "is_physical": true,
+                    "is_regular_mail": false,
+                    "main_email": "example@domain.tld",
+                    "main_phone_number": "(432) 987-9999",
+                    "main_fax_number": "(234) 987-8888",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/1",
+                    "contacts": [
+                        {
+                            "id": 19,
+                            "address_uri": "{{ api_suffix }}/addresses/974",
+                            "officer_uri": "{{ api_suffix }}/officials/1"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/974"
+                }
+            ],
+            "officers": [
+                {
+                    "id": 18472,
+                    "office_type": "additional",
+                    "job_title": "Chief Election Official - Judge of Probate",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Alfred",
+                    "initial": "",
+                    "last_name": "Booth",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 361-3728",
+                    "fax": "",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/18472"
+                },
+                {
+                    "id": 8192,
+                    "office_type": "secondary",
+                    "job_title": "Circuit Clerk/Absentee Election Manager",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "Debra",
+                    "initial": "",
+                    "last_name": "Hill",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 358-6801",
+                    "fax": "(334) 361-4830",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/8192"
+                },
+                {
+                    "id": 1,
+                    "office_type": "primary",
+                    "job_title": "Board of Registrars",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "New Voter Registrations",
+                    "initial": "",
+                    "last_name": "",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 358-6740",
+                    "fax": "(334) 364-4822",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/1"
+                },
+                {
+                    "id": 60247,
+                    "office_type": "additional",
+                    "job_title": "Absentee Election Manager",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Beth",
+                    "initial": "",
+                    "last_name": "George",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 303-1178",
+                    "fax": "",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/60247"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/offices/487"
+        },
+        {
+            "id": 488,
+            "updated": "2017-05-18T08:16:18Z",
+            "region": "{{ api_suffix }}/regions/488",
+            "email": "ovf-anonymized@test.com",
+            "website": "http://www.baldwincountyal.gov",
+            "hours": "M-F: 8a-4:30p Central",
+            "notes": "If you have never registered to vote or have not kept your registration current, you must contact the Board of Registrars at (251) 937-0305 or email baldwin@vote.alabama.gov.  They will follow up with you about next steps.\r\n",
+            "status": 1,
+            "addresses": [
+                {
+                    "id": 975,
+                    "address_to": "Board of Registrars",
+                    "street1": "119 W 2nd St",
+                    "street2": "",
+                    "city": "Bay MINETTE",
+                    "state": "AL",
+                    "zip": "36507",
+                    "zip4": "",
+                    "website": "",
+                    "is_physical": true,
+                    "is_regular_mail": false,
+                    "main_email": "example@domain.tld",
+                    "main_phone_number": "(432) 987-9999",
+                    "main_fax_number": "(234) 987-8888",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/2",
+                    "contacts": [
+                        {
+                            "id": 4828,
+                            "address_uri": "{{ api_suffix }}/addresses/975",
+                            "officer_uri": "{{ api_suffix }}/officials/2"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/975"
+                },
+                {
+                    "id": 976,
+                    "address_to": "Board of Registrars",
+                    "street1": "PO Box 1507",
+                    "street2": "",
+                    "city": "BAY MINETTE",
+                    "state": "AL",
+                    "zip": "36507",
+                    "zip4": "1507",
+                    "website": "",
+                    "is_physical": true,
+                    "is_regular_mail": false,
+                    "main_email": "example@domain.tld",
+                    "main_phone_number": "(432) 987-9999",
+                    "main_fax_number": "(234) 987-8888",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/2",
+                    "contacts": [
+                        {
+                            "id": 1,
+                            "address_uri": "{{ api_suffix }}/addresses/976",
+                            "officer_uri": "{{ api_suffix }}/officials/2"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/976"
+                }
+            ],
+            "officers": [
+                {
+                    "id": 18473,
+                    "office_type": "additional",
+                    "job_title": "Election Coordinator",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Violetta",
+                    "initial": "",
+                    "last_name": "Smith",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(251) 937-0285",
+                    "fax": "(251) 580-1834",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/18473"
+                },
+                {
+                    "id": 8193,
+                    "office_type": "secondary",
+                    "job_title": "Absentee Election Manager",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "Jody",
+                    "initial": "",
+                    "last_name": "Wise Campbell",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(251) 937-0379",
+                    "fax": "(251) 937-0277",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/8193"
+                },
+                {
+                    "id": 2,
+                    "office_type": "primary",
+                    "job_title": "Board of Registrars",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "",
+                    "initial": "",
+                    "last_name": "",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(251) 937-0305",
+                    "fax": "(251) 580-2522",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/2"
+                },
+                {
+                    "id": 18478,
+                    "office_type": "additional",
+                    "job_title": "Chief Election Officer - Judge of Probate",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Tim",
+                    "initial": "",
+                    "last_name": "Russell",
+                    "email": "",
+                    "phone": "(215) 937-0285",
+                    "fax": "(251) 580-1834",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/18478"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/offices/488"
+        },
+          ...
+    ]
+}
+
+
+h3. Example Request (Specific Offices by Region)
+
+*GET* {{ api_url }}/offices?region=3763
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 1,
+        "next": null,
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 3757,
+            "updated": "2017-04-27T02:44:36Z",
+            "region": "{{ api_suffix }}/regions/3763",
+            "email": "ovf-anonymized@test.com",
+            "website": "http://www.oceancountyclerk.com/default.htm",
+            "hours": "Monday thru Friday 8:00 am to 4:30 pm",
+            "notes": "The County Clerk issues the Vote by Mail (absentee) ballots; Voted ballots are returned to the Board of Elections. Military and Overseas Voters have the option to receive or send their ballots by email or fax. Please follow the instructions for ballot return. Please contact our office for more details.\r\n\r\n",
+            "status": 1,
+            "addresses": [
+                {
+                    "id": 7516,
+                    "address_to": "Ocean County Board of Elections",
+                    "street1": "129 Hooper Ave",
+                    "street2": "PO Box 2006",
+                    "city": "Toms River",
+                    "state": "NJ",
+                    "zip": "08754",
+                    "zip4": "2006",
+                    "website": "",
+                    "is_physical": true,
+                    "is_regular_mail": false,
+                    "main_email": "example@domain.tld",
+                    "main_phone_number": "(432) 987-9999",
+                    "main_fax_number": "(234) 987-8888",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/2505",
+                    "contacts": [
+                        {
+                            "id": 6495,
+                            "address_uri": "{{ api_suffix }}/addresses/7516",
+                            "officer_uri": "{{ api_suffix }}/officials/2505"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}  /addresses/7516"
+                },
+                {
+                    "id": 7515,
+                    "address_to": "Ocean County Board of Elections",
+                    "street1": "129 Hooper Ave",
+                    "street2": "",
+                    "city": "Toms River",
+                    "state": "NJ",
+                    "zip": "08753",
+                    "zip4": "2006",
+                    "website": "",
+                    "is_physical": true,
+                    "is_regular_mail": false,
+                    "main_email": "example@domain.tld",
+                    "main_phone_number": "(432) 987-9999",
+                    "main_fax_number": "(234) 987-8888",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}  /officials/2505",
+                    "contacts": [
+                        {
+                            "id": 6494,
+                            "address_uri": "{{ api_suffix }}/addresses/7515",
+                            "officer_uri": "{{ api_suffix }}/officials/2505"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}  /addresses/7515"
+                }
+            ],
+            "officers": [
+                {
+                    "id": 56759,
+                    "office_type": "additional",
+                    "job_title": "Voter Registration Inquiries",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "",
+                    "initial": "",
+                    "last_name": "",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(732) 929-2167",
+                    "fax": "(732) 506-5110",
+                    "office_uri": "{{ api_suffix }}  /offices/3757",
+                    "resource_uri": "{{ api_suffix }}  /officials/56759"
+                },
+                {
+                    "id": 10695,
+                    "office_type": "secondary",
+                    "job_title": "Absentee Voter Clerk",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Donna",
+                    "initial": "",
+                    "last_name": "Haddon",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(732) 929-2152",
+                    "fax": "(732) 349-4336",
+                    "office_uri": "{{ api_suffix }}/offices/3757",
+                    "resource_uri": "{{ api_suffix }}/officials/10695"
+                },
+                {
+                    "id": 2505,
+                    "office_type": "primary",
+                    "job_title": "Local Election Official",
+                    "title": "Hon",
+                    "suffix": "",
+                    "first_name": "Scott  M",
+                    "initial": "W",
+                    "last_name": "Colabella",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(732) 929-2018",
+                    "fax": "(732) 349-4336",
+                    "office_uri": "{{ api_suffix }}/offices/3757",
+                    "resource_uri": "{{ api_suffix }}/officials/2505"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/offices/3757"
+        }
+    ]
+}
+
+
+h2. Get Specific Local Election Office
+
+This method is used to retrieve specific local election office by id.
+
+h3. URL
+
+bc. /offices/<office_id>
+
+Supported Formats: *JSON*
+Supported Request Methods: *GET*
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Name|<(field-type)_. Type|<_. Description|
+|^*office_id*<br/>%{color:gray}^required^%|^Long|^identifies the office|
+
+h3. Example Request
+
+*GET* {{ api_url }}/offices/20673
+
+h3. Example Response
+
+bc. {
+    "id": 20673,
+    "updated": "2017-09-12T11:05:49Z",
+    "region": "{{ api_suffix }}/regions/20680",
+    "email": "",
+    "website": "http://winchesterwi.com",
+    "hours": "By Appointment Only",
+    "notes": "",
+    "status": 1,
+    "addresses": [
+        {
+            "id": 42409,
+            "address_to": "Cynthia Guzman",
+            "street1": "1154 Harris Lake Road W",
+            "street2": "",
+            "city": "Winchester",
+            "state": "WI",
+            "zip": "54557",
+            "zip4": "",
+            "website": "Http://winchesterwi.com",
+            "is_physical": true,
+            "is_regular_mail": false,
+            "functions": [],
+            "main_email": "example@domain.tld",
+            "main_phone_number": "(432) 987-9999",
+            "main_fax_number": "(234) 987-8888",
+            "primary_contact_uri": "{{ api_suffix }}/officials/42211",
+            "contacts": [
+                {
+                    "id": 12191,
+                    "address_uri": "{{ api_suffix }}/addresses/42409",
+                    "officer_uri": "{{ api_suffix }}/officials/42211"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/addresses/42409"
+        },
+        {
+            "id": 41460,
+            "address_to": "Municipal Clerk",
+            "street1": "1147 Harris Lake Rd W",
+            "street2": "",
+            "city": "Winchester",
+            "state": "WI",
+            "zip": "54557",
+            "zip4": "8917",
+            "website": "",
+            "is_physical": true,
+            "is_regular_mail": false,
+            "functions": [
+                "DOM_VR",
+                "DOM_REQ",
+                "DOM_RET",
+                "OVS_REQ",
+                "OVS_RET"
+            ],
+            "main_email": "example@domain.tld",
+            "main_phone_number": "(432) 987-9999",
+            "main_fax_number": "(234) 987-8888",
+            "primary_contact_uri": "{{ api_suffix }}/officials/42211",
+            "contacts": [
+                {
+                    "id": 12190,
+                    "address_uri": "{{ api_suffix }}/addresses/41460",
+                    "officer_uri": "{{ api_suffix }}/officials/42211"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/addresses/41460"
+        },
+        {
+            "id": 41461,
+            "address_to": "Municipal Clerk",
+            "street1": "1147 Harris Lake Rd W",
+            "street2": "",
+            "city": "Winchester",
+            "state": "WI",
+            "zip": "54557",
+            "zip4": "8917",
+            "website": "",
+            "is_physical": true,
+            "is_regular_mail": false,
+            "functions": [
+                "DOM_VR",
+                "DOM_REQ",
+                "DOM_RET",
+                "OVS_REQ",
+                "OVS_RET"
+            ],
+            "main_email": "example@domain.tld",
+            "main_phone_number": "(432) 987-9999",
+            "main_fax_number": "(234) 987-8888",
+            "primary_contact_uri": "{{ api_suffix }}/officials/42211",
+            "contacts": [
+                {
+                    "id": 4541,
+                    "address_uri": "{{ api_suffix }}/addresses/41461",
+                    "officer_uri": "{{ api_suffix }}/officials/42211"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/addresses/41461"
+        }
+    ],
+    "officers": [
+        {
+            "id": 42212,
+            "office_type": "secondary",
+            "job_title": "Town Clerk",
+            "title": "",
+            "suffix": "",
+            "first_name": "Ruth",
+            "initial": "",
+            "last_name": "Allis",
+            "email": "ovf-anonymized@test.com",
+            "phone": "(715) 686-2123",
+            "fax": "(715) 686-2488",
+            "office_uri": "{{ api_suffix }}/offices/20673",
+            "resource_uri": "{{ api_suffix }}/officials/42212"
+        },
+        {
+            "id": 42211,
+            "office_type": "primary",
+            "job_title": "Local Election Official",
+            "title": "",
+            "suffix": "",
+            "first_name": "Ruth",
+            "initial": "",
+            "last_name": "Allis",
+            "email": "ovf-anonymized@test.com",
+            "phone": "(715) 686-2123",
+            "fax": "(715) 686-2488",
+            "office_uri": "{{ api_suffix }}/offices/20673",
+            "resource_uri": "{{ api_suffix }}/officials/42211"
+        }
+    ],
+    "resource_uri": "{{ api_suffix }}/offices/20673"
+}
+
+
+h1. Local Election Officials
+
+p. Methods for working with local election officials.
+
+h2. Get All Local Election Officials
+
+This method is used to retrieve all officials or specific officials by office and/or office type.
+
+h3. URL
+
+bc. /officials[?office=<office_id>][&office_type=<office_type>]
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Field|<(field-type)_. Type|<_. Description|
+|^*office_id*<br/>%{color:gray}^optional^%|^Long|^optionally officials filter by office|
+|^*office_type*<br/>%{color:gray}^optional^%|^String|^optionally officials filter by office type.<br/>*Values*: %(field-value)primary%, %(field-value)secondary%, %(field-value)additional%|
+
+h3. Example Request (Get All Officials)
+
+*GET* {{ api_url }}/officials
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 28529,
+        "next": "{{ api_suffix }}/officials?limit=20&offset=20",
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 43383,
+            "office_type": "additional",
+            "job_title": "",
+            "title": "",
+            "suffix": "",
+            "first_name": "",
+            "initial": "",
+            "last_name": "",
+            "email": "",
+            "phone": "",
+            "fax": "",
+            "office_uri": null,
+            "resource_uri": "{{ api_suffix }}/officials/43383",
+            "geoid": ""
+        },
+        {
+            "id": 43384,
+            "office_type": "additional",
+            "job_title": "",
+            "title": "",
+            "suffix": "",
+            "first_name": "",
+            "initial": "",
+            "last_name": "",
+            "email": "",
+            "phone": "",
+            "fax": "",
+            "office_uri": null,
+            "resource_uri": "{{ api_suffix }}/officials/43384",
+            "geoid": ""
+        },
+        {
+            "id": 43385,
+            "office_type": "additional",
+            "job_title": "",
+            "title": "",
+            "suffix": "",
+            "first_name": "",
+            "initial": "",
+            "last_name": "",
+            "email": "",
+            "phone": "",
+            "fax": "",
+            "office_uri": null,
+            "resource_uri": "{{ api_suffix }}/officials/43385",
+            "geoid": ""
+        },
+        ...
+    ]
+}
+
+
+
+h3. Example Request (Get Official by Specific Office and Office Type)
+
+*GET* {{ api_url }}/officials?office=700&office_type=primary
+
+h3. Example Response
+
+bc. {
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 1,
+        "next": null,
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 213,
+            "office_type": "primary",
+            "job_title": "Local Election Official",
+            "title": "Ms.",
+            "suffix": "",
+            "first_name": "Michelle",
+            "initial": "T",
+            "last_name": "Baldwin",
+            "email": "ovf-anonymized@test.com",
+            "phone": "(559) 624-7300",
+            "fax": "(559) 737-4498",
+            "office_uri": "{{ api_suffix }}/offices/700",
+            "resource_uri": "{{ api_suffix }}/officials/213"
+        }
+    ]
+}
+
+
+h2. Get Specific Local Election Official
+
+This method is used to retrieve specific local election official by id.
+
+h3. URL
+
+bc. /officials/<official_id>
+
+Supported Formats: *JSON*
+Supported Request Methods: *GET*
+
+h3. Parameters
+
+table(table table-condensed).
+|<(field-name)_. Name|<(field-type)_. Type|<_. Description|
+|^*official_id*<br/>%{color:gray}^required^%|^Long|^identifies the official|
+
+h3. Example Request
+
+*GET* {{ api_url }}/officials/1
+
+h3. Example Response
+
+bc. {
+    "id": 1,
+    "office_type": "primary",
+    "job_title": "Board of Registrars",
+    "title": "The Honorable",
+    "suffix": "",
+    "first_name": "New Voter Registrations",
+    "initial": "",
+    "last_name": "",
+    "email": "ovf-anonymized@test.com",
+    "phone": "(334) 358-6740",
+    "fax": "(334) 364-4822",
+    "office_uri": "{{ api_suffix }}/offices/487",
+    "resource_uri": "{{ api_suffix }}/officials/1"
+}

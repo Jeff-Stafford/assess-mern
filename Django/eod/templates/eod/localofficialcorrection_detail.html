@@ -1,0 +1,67 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/eod.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block admin_header %}
+    <h2 class="page-header">Corrections</h2>
+
+    <dl class="dl-horizontal">
+        <dt>Public URL:</dt>
+        <dd><a href="{% url 'eod:public-submit-updates' correction.request_id %}">{{ correction.request_id }}</a></dd>
+        <dt>Updated At:</dt>
+        <dd>{{ correction.updated_at }}</dd>
+        <dt>Status:</dt>
+        <dd>{{ correction.human_status }}</dd>
+    </dl>
+
+{% endblock %}
+
+{% block admin_content %}
+    <div class='col-lg-12'>
+    </div>
+
+    <h2>History</h2>
+    <table class='table'>
+        <tr>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+        {% for h in correction.local_official.correction_history.all|dictsortreversed:"created_at" %}
+        <tr>
+            <td>{{ h.created_at }}</td>
+            <td>{{ h.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <table>
+    <tr>
+    </tr>
+    </table>
+
+    <h3>Local Official Details</h3>
+
+    <dl class="dl-horizontal">
+        <dt>Public URL:</dt>
+        <dd><a href='#'>{{ correction.request_id }}</a></dd>
+        <dt>Created At:</dt>
+        <dd>{{ correction.created_at }}</dd>
+        <dt>Updated At:</dt>
+        <dd>{{ correction.updated_at }}</dd>
+        <dt>Status:</dt>
+        <dd>{{ correction.human_status }}</dd>
+    </dl>
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+<script src="{% static 'js/merge.js' %}"></script>
+{% endblock %}
+

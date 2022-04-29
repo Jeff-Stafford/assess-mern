@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load compress staticfiles %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block content %}
+<div class="container">
+{{ message }}
+</div>
+{% endblock content %}

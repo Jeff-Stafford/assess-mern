@@ -1,0 +1,9 @@
+{% if election.election_status == 'A' %}
+<i class='election-status election-status-approved fa fa-check-square' aria-hidden="true" title='{{ election.get_election_status_display }}'></i>
+{% elif election.election_status == 'P' %}
+<i class='election-status election-status-pending fa fa-exclamation-triangle' aria-hidden="true" title='{{ election.get_election_status_display }}'></i>
+{% elif election.election_status == 'Z' %}
+<i class='election-status election-status-archived fa fa-file-archive-o' aria-hidden="true" title='{{ election.get_election_status_display }}'></i>
+{% elif election.election_status == 'D' %}
+<i class='election-status election-status-deleted fa fa-trash-o' aria-hidden="true" title='{{ election.get_election_status_display }}'></i>
+{% endif %}

@@ -1,0 +1,8 @@
+{% load compress staticfiles bootstrap %}
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+{% endfor %}
+<div class="form-group col-lg-12">
+    {{ form.notes|bootstrap }}
+</div>
+

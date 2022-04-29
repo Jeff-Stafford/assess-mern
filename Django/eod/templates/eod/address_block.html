@@ -1,0 +1,345 @@
+{% load compress staticfiles bootstrap formset_tags breadcrumbs crispy_forms_tags state_name %}
+<div class="panel-body">
+
+<h3>Address {{forloop.counter}}: <span class="text-muted">{{data.2.operation}}</span>
+  {% if 'No Updates' in data.2.operation %}
+    <a class="btn btn-success btn-xs pull-right" role="button" data-object="see-more" data-toggle="collapse" href="#address{{forloop.counter}}" aria-expanded="false" aria-controls="address{{forloop.counter}}">View Data</a>
+  {% endif %}
+</h3>
+
+<input type="hidden" name="address-accept-{{forloop.counter}}-delete" value="{{delete}}" />
+<input type="hidden" name="address-reject-{{forloop.counter}}-delete" value="0" />
+
+<input type="hidden" name="address-accept-{{forloop.counter}}-add" value="{{addition}}" />
+<input type="hidden" name="address-reject-{{forloop.counter}}-add" value="0" />
+
+<input type="hidden" name="address-accept-{{forloop.counter}}-order_number" value="{{suggested.order_number}}" />
+<input type="hidden" name="address-reject-{{forloop.counter}}-order_number" value="{{suggested.order_number}}" />
+
+<input type="hidden" name="address-{{forloop.counter}}-id" value="{{current.id}}" />
+
+<div class="{% if 'No Updates' in data.2.operation %}collapse{% else %}collapse-in{% endif %}" id="address{{forloop.counter}}">
+
+  <table class="table table-responsive table-condensed corrections-table {{ data.2.style_class }}">
+    <thead>
+      <tr>
+        <th></th>
+        <th width="40%" class="text-center">Current Value</th>
+        <th width="40%">Correction</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">Address To</label></th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.address_to }}"></span>
+
+          <input type="hidden" name="address-reject-{{forloop.counter}}-address_to" value="{{ current.address_to }}" />
+          {{ current.address_to }}
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.address_to}}"></span>
+          <input type="text" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-address_to"
+                 value="{{ suggested.address_to }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">Street #1</label></th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.street1}}"></span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-street1" value="{{ current.street1 }}" />
+          <span>{{ current.street1 }}</span>
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.street1}}"></span>
+          <input type="text" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-street1"
+                 value="{{ suggested.street1 }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row">Street #2</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.street2}}"></span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-street2" value="{{ current.street2 }}" />
+          <span>{{ current.street2 }}</span>
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.street2}}"></span>
+          <input type="text" class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-street2" value="{{ suggested.street2 }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">City</label></th>
+        <td class="text-center current">
+          <input type="hidden" name="address-reject-{{forloop.counter}}-city" value="{{ current.city }}" />
+          <span>{{ current.city }}</span>
+          <span class="hidden" data-object="current" data-value="{{ current.city}}"></span>
+        </td>
+        <td>
+          <input type="text" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-city"
+                 value="{{ suggested.city }}" />
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.city}}"></span>
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">Zip Code</label></th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.zip }}{{current.zip4}}"></span>
+          <span>
+            {{ current.zip }}-{{current.zip4}}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-zip" value="{{ current.zip }}" />
+          <input type="hidden" name="address-reject-{{forloop.counter}}-zip4" value="{{ current.zip4 }}" />
+        </td>
+        <td class="form-inline">
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.zip }}{{suggested.zip4}}"></span>
+          <span class="hidden-if-deleted">
+          <input class="form-control" size="8" type="text" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 pattern="^\d{5}$"
+                 placeholder="XXXXX"
+                 class="{% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-zip" value="{{ suggested.zip }}" />
+          -
+          <input class="form-control" size="7" type="text" class="{% if not suggested %} hidden {% endif %}"
+                 name="address-accept-{{forloop.counter}}-zip4" value="{{ suggested.zip4 }}" />
+          </span>
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row">Website</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.website }}"></span>
+          <span>
+            {{ current.website }}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-website" value="{{ current.website }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.website }}"></span>
+          <input type="text" class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-website"
+                 placeholder="Should start with http:// or https://"
+                 value="{{ suggested.website }}" />
+        </td>
+      </tr>
+
+      <tr class="analyze-correction">
+        <th scope="row">Main Office Email</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.main_email }}"></span>
+          <span>
+            {{ current.main_email }}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-main_email" value="{{ current.main_email }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.main_email }}"></span>
+          <input type="email" class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-main_email"
+                 placeholder="example@domain.com"
+                 value="{{ suggested.main_email }}" />
+        </td>
+      </tr>
+
+      <tr class="analyze-correction">
+        <th scope="row" class="text-nowrap">Main Office Phone #</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.main_phone_number }}"></span>
+          <span>
+            {{ current.main_phone_number }}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-main_phone_number" value="{{ current.main_phone_number }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.main_phone_number }}"></span>
+          <input type="text" class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-main_phone_number"
+                 pattern="^\(\d{3}\) \d{3}-\d{4}( x(\d{1,5}))?$"
+                 placeholder="(123) 132-1234 x123"
+                 value="{{ suggested.main_phone_number }}" />
+        </td>
+      </tr>
+
+      <tr class="analyze-correction">
+        <th scope="row" class="text-nowrap">Main Office Fax #</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.main_fax_number }}"></span>
+          <span>
+            {{ current.main_fax_number }}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-main_fax_number" value="{{ current.main_fax_number }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.main_fax_number }}"></span>
+          <input type="text" class="form-control {% if not suggested %} hidden {% endif %}" name="address-accept-{{forloop.counter}}-main_fax_number"
+                 pattern="^\(\d{3}\) \d{3}-\d{4}$"
+                 placeholder="(123) 132-1234"
+                 value="{{ suggested.main_fax_number }}" />
+        </td>
+      </tr>
+
+      <tr class="analyze-correction">
+        <th scope="row">Primary Contact</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{ current.primary_contact.id}}"></span>
+          <span>
+            {{ current.primary_contact.office_name}}
+          </span>
+
+          {% if suggested.primary_contact.nonpersistedid %}
+          <input type="hidden" name="address-reject-{{forloop.counter}}-primary_contact_id" value="{{ suggested.primary_contact.nonpersistedid }}" />
+          {% else %}
+          <input type="hidden" name="address-reject-{{forloop.counter}}-primary_contact_id" value="{{ current.primary_contact.id }}" />
+          {% endif %}
+
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{ suggested.primary_contact.id}}"></span>
+
+          {% if suggested.primary_contact.nonpersistedid %}
+          <input type="hidden" name="address-accept-{{forloop.counter}}-primary_contact_id" value="{{ suggested.primary_contact.nonpersistedid }}" />
+          {% else %}
+          <input type="hidden" name="address-accept-{{forloop.counter}}-primary_contact_id" value="{{ suggested.primary_contact.id }}" />
+          {% endif %}
+
+          <span class="{% if not suggested %} hidden {% endif %}">
+            {{suggested.primary_contact.office_name}}
+          </span>
+
+        </td>
+      </tr>
+
+      {% for contact in suggested.additional_contacts %}
+      <tr class="analyze-correction">
+        <th scope="row" class="text-nowrap">Additional Contact {{forloop.counter}}</th>
+        <td>
+          <span class="hidden" data-object="current" data-value="{{ contact.id}}"></span>
+          <input type="hidden" name="address-reject-{{forloop.parentloop.counter}}-additional_contacts" value="{{ contact.id }}" />
+          {% if not addition %}
+          <span>{{ contact.office_name }}</span>
+          {% endif %}
+        </td>
+        <td>
+
+          {% if contact.id %}
+          <input type="hidden" name="address-accept-{{forloop.parentloop.counter}}-additional_contacts" value="{{ contact.id }}" />
+          {% else %}
+          <input type="hidden" name="address-accept-{{forloop.parentloop.counter}}-additional_contacts" value="{{ contact.nonpersistedid }}" />
+          {% endif %}
+
+          <span class="{% if not suggested %} hidden {% endif %}">
+            {{contact.office_name}}
+          </span>
+
+          <span class="hidden" data-object="corrected" data-value="{{collection_contact.0}}"></span>
+        </td>
+      </tr>
+      {% endfor %}
+
+      <tr>
+        <td colspan="3">
+          <h4><strong>Address functions:</strong></h4>
+        </td>
+      </tr>
+
+      <tr class="analyze-correction">
+        <th scope="row">Regular Mail</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{current.is_regular_mail}}"></span>
+          <span>
+            {% if current.is_regular_mail %}Yes{% else %}No{% endif %}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-is_regular_mail" value="{{ current.is_regular_mail }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.is_regular_mail}}"></span>
+          <span class="hidden-if-deleted">
+            <label class="radio-inline" for="address-function-{{forloop.counter}}-is_regular_mail-yes">
+              <input id="address-function-{{forloop.counter}}-is_regular_mail-yes" type="radio"
+                     value="Yes" {% if suggested.is_regular_mail %} checked="checked" {% endif %}
+                     name="address-accept-{{forloop.counter}}-is_regular_mail" />
+              Yes</label>
+              <label class="radio-inline" for="address-function-{{forloop.counter}}-is_regular_mail-no">
+              <input id="address-function-{{forloop.counter}}-is_regular_mail-no" type="radio"
+                     value="No" {% if not suggested.is_regular_mail %} checked="checked" {% endif %}
+                     name="address-accept-{{forloop.counter}}-is_regular_mail" />
+              No</label>
+          </span>
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row">Express Mail Delivery/Courier</th>
+        <td class="text-center current">
+          <span class="hidden" data-object="current" data-value="{{current.is_physical}}"></span>
+          <span>
+            {% if current.is_physical %}Yes{% else %}No{% endif %}
+          </span>
+          <input type="hidden" name="address-reject-{{forloop.counter}}-is_physical" value="{{ current.is_physical }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.is_physical}}"></span>
+          <span class="hidden-if-deleted">
+            <label class="radio-inline" for="address-function-{{forloop.counter}}-is_physical-yes">
+              <input id="address-function-{{forloop.counter}}-is_physical-yes" type="radio"
+                     value="Yes" {% if suggested.is_physical %} checked="checked" {% endif %}
+                     name="address-accept-{{forloop.counter}}-is_physical" /> Yes</label>
+
+            <label class="radio-inline" for="address-function-{{forloop.counter}}-is_physical-no">
+              <input id="address-function-{{forloop.counter}}-is_physical-no" type="radio"
+                     value="No" {% if not suggested.is_physical %} checked="checked" {% endif %}
+                     name="address-accept-{{forloop.counter}}-is_physical" /> No</label>
+          </span>
+        </td>
+      </tr>
+
+      {% for group in address_functions %}
+      <tr>
+        <td colspan="3">
+          <h5><strong>{{group.title}}:</strong></h5>
+        </td>
+      </tr>
+      {% for function in group.functions %}
+      <tr class="analyze-correction">
+        <th scope="row"></th>
+        <td>
+          <span class="hidden" data-object="current" data-value="{% if function.code in current.functions %}YES{% else %}NO{% endif %}"></span>
+          <span class="hidden-if-deleted">
+            <label class="checkbox-inline" for="" title="{{function.title}}">
+              <input type="checkbox" disabled="disabled"
+                     value="{{function.code}}" {% if function.code in current.functions %} checked="checked" {% endif %}
+                     name="address-reject-{{forloop.parentloop.parentloop.counter}}-functions" /> {{function.title}}
+              <!-- keep this in order to pass the value to the controller -->
+              {% if function.code in current.functions %}
+              <input type="hidden" value="{{function.code}}" name="address-reject-{{forloop.parentloop.parentloop.counter}}-functions" />
+              {% endif %}
+            </label>
+          </span>
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{% if function.code in suggested.functions %}YES{% else %}NO{% endif %}"></span>
+          <span class="hidden-if-deleted">
+            <label class="checkbox-inline" for="address-function-{{forloop.parentloop.counter}}-{{function.code}}" title="{{function.title}}">
+              <input id="address-function-{{forloop.parentloop.counter}}-{{function.code}}" type="checkbox"
+                     value="{{function.code}}" {% if function.code in suggested.functions %} checked="checked" {% endif %}
+                     name="address-accept-{{forloop.parentloop.parentloop.counter}}-functions" /> {{function.title}}
+            </label>
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="panel-footer text-right operations {%if not forloop.last%}notlast{%else%}last{%endif%}">
+    <label class="radio-inline">
+      <input type="radio" name="address-{{forloop.counter}}-action" value="reject" id="address-{{forloop.counter}}-accept" {% if 'No Updates' in data.2.operation %}
+             checked="selected" {% else %} required="required"{%endif%} /> Do Not Update
+    </label>
+    <label class="radio-inline">
+      <input type="radio" data-object="officer-dependent" data-object-id="{{current.primary_contact.id}}" name="address-{{forloop.counter}}-action"
+             value="accept" id="address-{{forloop.counter}}-discard" /> Update To Use Correction
+    </label>
+  </div>
+
+</div>
+</div>

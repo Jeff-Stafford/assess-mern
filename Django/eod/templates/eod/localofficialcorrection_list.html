@@ -1,0 +1,67 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs %}
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/eod.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+
+{% block admin_header %}
+    {% url 'eod:corrections' as correction_url %}
+    <div class='row'>
+        <h2 class='page-header'>Corrections
+            <small>(
+                {% if not request.GET.status %}
+                    All
+                {% elif request.GET.status == 'EMAIL_SENT' %}
+                    Sent
+                {% elif request.GET.status == 'EMAIL_REJECTED_BOUNCE' %}
+                    Bounced
+                {% elif request.GET.status == 'CORRECTION_SUBMITTED_UPDATES' %}
+                    Submitted
+                {% elif request.GET.status == 'CORRECTION_SUBMITTED_NO_UPDATES' %}
+                    Submitted - No Updates
+                {% elif request.GET.status == 'CORRECTION_ACCEPTED' %}
+                    Accepted
+                {% elif request.GET.status == 'CORRECTION_REJECTED' %}
+                    Rejected     
+                {% endif %}
+                )
+            </small>
+        </h2>
+
+{% endblock %}
+
+{% block admin_content %}
+    <table class="table table-responsive corrections-container table-responsive">
+        <thead>
+            <tr>
+                <th>Updated</th>
+                <th>Region</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for corr in object_list %}
+            <tr>
+                <td class='nowrapword'><a href="{% url 'eod:correction-detail' corr.pk %}">{{ corr.updated_at }}</a></td>
+                <td class='' scope="row">{{ corr.local_official.region.name }}, {{ corr.local_official.region.state.name }}</td>
+                <td>
+                    {% include 'eod/human_status.html' with correction=corr %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan=3>No records.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    {% include "paginator.html" with items=page_obj %}
+
+{% endblock %}

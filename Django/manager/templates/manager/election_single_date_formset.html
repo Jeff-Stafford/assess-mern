@@ -1,0 +1,38 @@
+{% load compress staticfiles bootstrap bootstrap3 uuid %}
+<!-- election date -->
+{% uuid formset_id %}
+<tr data-formset-form id="{{ formset_id }}">
+    <td class="date-container" colspan="4">
+        {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+        <table class="table table-responsive">
+            <tr>
+                <td class="col-lg-3 date">
+                    {{ form.date|bootstrap:"ignore_form_group=1"}}
+                </td>
+
+                <td class="col-lg-2 time">
+                    {{ form.time|bootstrap:"ignore_form_group=1"}}
+                </td>
+
+                <td class="col-lg-2 time-zone">
+                    {{ form.time_zone|bootstrap:"ignore_form_group=1"}}
+                </td>
+
+                <td class="col-lg-1 actions-column text-right">
+                    {{ form.DELETE }}
+                    <button class="btn btn-secondary btn-xs delete-row" type="button" title="Remove date"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                </td>
+            </tr>
+            <tr class="date-example">
+                <td colspan="4">
+                    <span class="glyphicon glyphicon-refresh glyphicon-spin"></span>
+                    <span class="error"></span>
+                    <span class="example"></span>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<!-- /election date -->

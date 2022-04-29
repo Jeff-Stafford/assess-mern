@@ -1,0 +1,22 @@
+<label for="correction_status"></label>
+<select class="form-control" id="correction_status">
+  <option data-url='{{ url }}' {% if not request.GET.status %} selected{% endif %}>All</option>
+  <option data-url='{{ url }}?status=EMAIL_SENT' {% if request.GET.status == 'EMAIL_SENT'%} selected{% endif %}>Sent</option>
+  <option data-url='{{ url }}?status=EMAIL_REJECTED_BOUNCE' {% if request.GET.status == 'EMAIL_REJECTED_BOUNCE'%} selected{% endif %}>Bounced</option>
+  <option data-url='{{ url }}?status=CORRECTION_SUBMITTED_UPDATES' {% if request.GET.status == 'CORRECTION_SUBMITTED_UPDATES'%} selected{% endif %}>Submitted</option>
+  <option data-url='{{ url }}?status=CORRECTION_SUBMITTED_NO_UPDATES' {% if request.GET.status == 'CORRECTION_SUBMITTED_NO_UPDATES'%} selected{% endif %}>Submitted (no updates)</option>
+  <option data-url='{{ url }}?status=CORRECTION_ACCEPTED' {% if request.GET.status == 'CORRECTION_ACCEPTED'%} selected{% endif %}>Accepted</option>
+  <option data-url='{{ url }}?status=CORRECTION_REJECTED' {% if request.GET.status == 'CORRECTION_REJECTED'%} selected{% endif %}>Rejected</option>
+  <option data-url='{{ url }}?status=ERROR' {% if request.GET.status == 'ERROR'%} selected{% endif %}>Error</option>
+</select>
+
+<script>
+$(document).ready(function() {
+    $("#correction_status").change(function (e) {
+        url = $('#correction_status :selected').data('url')
+        if (url) {
+            window.location.href = url
+        }
+    })
+})
+</script>

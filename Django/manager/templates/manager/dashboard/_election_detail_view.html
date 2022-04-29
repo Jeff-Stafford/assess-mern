@@ -1,0 +1,7 @@
+{% for election in elections %}
+    {% include "manager/dashboard/_election_detail.html" with election=election %}
+{% empty %}
+    <p>No Elections.</p>
+{% endfor %}
+
+{% include 'paginator.html' with items=elections %}

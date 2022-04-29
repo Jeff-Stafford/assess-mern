@@ -1,0 +1,31 @@
+<!-- full zip -->
+{% load crispy_forms_field %}
+<div id="div_{{ form.zip.auto_id }}" class="form-group{% if form.zip.errors or form.zip4.errors %} has-error{% endif %}">
+    {% if form.zip.label %}
+    <label for="{{ form.zip.id_for_label }}" class="control-label col-xs-4">
+        {{ form.zip.label|safe }}
+    </label>
+    {% endif %}
+    <div class='row col-xs-12 col-xs-6'>
+        <div class='col-xs-7{% if not form.zip.errors %} exclude{% endif %}'>
+            {% crispy_field form.zip %}
+        </div>
+        <div class='col-xs-5{% if not form.zip4.errors %} exclude{% endif %}'>
+            {% crispy_field form.zip4 'placeholder' '+4' %}
+        </div>
+        {% if form.zip.errors or form.zip4.errors %}
+        <div class='col-xs-10'>
+            <span class="help-block">
+                {% if form.zip.errors and form.zip4.errors %}
+                Zip and Zip4 codes are not valid
+                {% elif form.zip.errors %}
+                Zip code is not valid
+                {% else %}
+                Zip4 code is not valid
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<!-- /zip -->

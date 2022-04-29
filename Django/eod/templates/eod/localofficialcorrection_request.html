@@ -1,0 +1,47 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags %}
+{% block css %}
+  <!-- <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" /> -->
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block admin_header %}
+    <dl class="dl-horizontal">
+        <dt>Correction public URL:</dt>
+        <dd><a href='#'>{{ correction.request_id }}</a></dd>
+        <dt>Correction created At:</dt>
+        <dd>{{ correction.created_at }}</dd>
+        <dt>Status:</dt>
+        <dd>{{ correction.human_status }} (updated at {{ correction.updated_at }})</dd>
+    </dl>
+
+    <h2>Local Official Correction Request</h2>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container">
+
+    <h3>Local Official Details</h3>
+
+    <dl class="dl-horizontal">
+        <dt>Public URL:</dt>
+        <dd><a href='#'>{{ correction.request_id }}</a></dd>
+        <dt>Created At:</dt>
+        <dd>{{ correction.created_at }}</dd>
+        <dt>Updated At:</dt>
+        <dd>{{ correction.updated_at }}</dd>
+        <dt>Status:</dt>
+        <dd>{{ correction.human_status }}</dd>
+    </dl>
+
+    <form method="POST">
+         {% csrf_token %}
+        <button type="submit">Send request</button>
+    </form>
+
+</div>
+{% endblock %}

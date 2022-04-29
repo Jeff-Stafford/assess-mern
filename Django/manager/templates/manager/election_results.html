@@ -1,0 +1,89 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags %}
+{% block css %}
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+
+{% block admin_header %}
+    {% url 'manager:election_update' election_id as election_update_url %}
+    {% url 'manager:election_results' election_id as election_results_url %}
+    {% url 'manager:election_download_history' election_id as election_download_history_url %}
+
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="{% if request.path == election_update_url %}active{% endif %}"><a href="{{ election_update_url }}">General Information</a></li>
+      <li role="presentation" class="{% if request.path == election_results_url %}active{% endif %}"><a href="{{ election_results_url }}">Results</a></li>
+      <li role="presentation" class="{% if request.path == election_download_history_url %}active{% endif %}"><a href="{{ election_download_history_url }}">Download History</a></li>
+    </ul>
+
+    <!-- <h2>{% if form.instance.id %}Update{% else %}Create{% endif %} Election</h2> -->
+{% endblock %}
+
+
+{% block admin_content %}
+  <div class="container">
+    {{ block.super }}
+    <h3>Results</h3>
+    {% for r in election.results.all %}
+    <table border='0' class='table-election-results table-condensed'>
+        <tr>
+            <td class='uploader'>
+                <dl class="dl-horizontal">
+                    <dt>Uploaded</dt>
+                    <dd>{{ r.created_at }}</dd>
+                    {% if r.upload_by_user %}
+                        <dt>User</dt>
+                        <dd>{{ r.upload_by_user }}</dd>
+                    {% endif %}
+                    {% if r.uploader_name %}
+                    <dt>Name</dt>
+                    <dd>{{ r.uploader_name }}</dd>
+                    {% endif %}
+                    {% if r.uploader_phone %}
+                    <dt>Phone</dt>
+                    <dd>{{ r.uploader_phone }}</dd>
+                    {% endif %}
+                    {% if r.uploader_email %}
+                    <dt>Email</dt>
+                    <dd>{{ r.uploader_email }}</dd>
+                    {% endif %}
+                    <dt>Files</dt>
+                    <dd>
+                        <table class='attachments' border='0'>
+                            <tbody>
+                                {% for attachment in r.attachments.all %}
+                                <tr>
+                                    <td><a class='longfilenamedots' download target="_blank" title='{{ attachment.original_filename}}' href='{% url 'manager:election_results_download_link'  attachment.id %}'>{{ attachment.original_filename}}</a></td>
+                                    <td>{{ attachment.notes }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </dd>
+                </dl>
+            </td>
+        </tr>
+        {% if r.notes %}
+        <tr class='notes'>
+            <td colspan="2">
+                <dl class="dl-horizontal">
+                    <dt>Notes</dt>
+                    <dd>{{ r.notes }}</dd>
+                </dl>
+            </td>
+        </tr>
+        {% endif %}
+    </table>
+    {% empty %}
+    <p>No results.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+{% endblock tail_uncompressed_js %}

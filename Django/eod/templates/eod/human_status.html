@@ -1,0 +1,59 @@
+<!-- human status -->
+{% if correction.status == 'ERROR' %}
+    <span class="text-danger glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    {{ correction.status_context.error.message }}
+
+{% elif correction.status == 'EMAIL_REJECTED_BOUNCE' %}
+    <span class="text-danger glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    {{ correction.human_status }}
+    {% if correction.status_context.bounce %}
+    <details>
+        <dl class="dl-horizontal">
+            <dt>Bounce Time:</dt>
+            <dd>{{ correction.status_context.bounce.timestamp }}</dd>
+            <dt>Bounce Type:</dt>
+            <dd>{{ correction.status_context.bounce.bounceSubType }} / {{ correction.status_context.bounce.bounceType }}</dd>
+            {% if correction.status_context.bounce.bouncedRecipients %}
+            {% for recp in correction.status_context.bounce.bouncedRecipients %}
+            <dt>Email:</dt>
+            <dd>{{ recp.emailAddress }}</dd>
+            <dt>Status:</dt>
+            <dd>{{ recp.status }} ({{ recp.action }})</dd>
+            <dt>Code:</dt>
+            <dd>{{ recp.diagnosticCode }}</dd>
+            {% endfor %}
+            {% endif %}
+        </dl>
+    </details>
+    {% endif %}
+
+{% elif correction.status == 'EMAIL_REJECTED_COMPLAINT' %}
+    <span class="text-danger glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    {{ correction.human_status }}
+    {% if correction.status_context.complaint %}
+    <details>
+        <dl class="dl-horizontal">
+            <dt>Complaint Time:</dt>
+            <dd>{{ correction.status_context.complaint.timestamp }}</dd>
+            <dt>Complaint Type:</dt>
+            <dd>{{ correction.status_context.complaint.complaintFeedbackType }}</dd>
+            {% if correction.status_context.complaint.complainedRecipients %}
+            {% for compl in correction.status_context.complaint.complainedRecipients %}
+            <dt>Email:</dt>
+            <dd>{{ compl.emailAddress }}</dd>
+            {% endfor %}
+            {% endif %}
+        </dl>
+    </details>
+    {% endif %}
+
+{% else %}
+    {{ correction.human_status }}
+{% endif %}
+
+{% if correction.status_context.error %}
+<details class='stacktrace'>
+    <code>{{ correction.status_context.error.stacktrace|linebreaksbr}}</code>
+</details>
+{% endif %}
+<!-- /human status -->

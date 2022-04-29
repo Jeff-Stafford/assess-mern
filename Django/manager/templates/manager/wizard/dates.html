@@ -1,0 +1,159 @@
+{% extends "manager/wizard/base_wizard.html" %}
+{% load static i18n bootstrap bootstrap3 formset_tags %}
+
+{% block head %}
+    {{ block.super }}
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block body_sub_class %}wizard-dates{% endblock %}
+
+{% block wizard_page %}
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+
+    <div class="tab-content">
+        <div class="tab-pane fade active in" id="dates">
+            <h2>Enter the Dates &amp; Deadlines for Your Election</h2>
+            <h3 class="section">Election Details</h3>
+            <div class="form-group row">
+                {{ wizard.form.election_name|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            <div class="form-group row">
+                {{ wizard.form.election_date|bootstrap:"form_group=col-xs-6,ignore_form_group=1"}}
+                {{ wizard.form.election_type|bootstrap:"form_group=col-xs-6,ignore_form_group=1"}}
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Domestic Deadlines</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row form-group">
+                        {{ wizard.form.election_day_registration_is_available|bootstrap:"form_group=col-xs-6 col-xs-offset-2,ignore_form_group=1"}}
+                    </div>
+                    <!-- Domestic Dates -->
+                    {% include "manager/wizard/date_widget.html" with date_field=wizard.form.domestic_registration_deadline date_mode_field=wizard.form.domestic_registration_deadline_mode formset=wizard.form.domesticRegistrationDeadlineFormSet formset_id="domesticRegistrationDeadline" only %}
+                    {% include "manager/wizard/date_widget.html" with date_field=wizard.form.domestic_request_deadline date_mode_field=wizard.form.domestic_request_deadline_mode formset=wizard.form.domesticRequestDeadlineFormSet formset_id="domesticRequestDeadline" only %}
+                    {% include "manager/wizard/date_widget.html" with date_field=wizard.form.domestic_return_deadline date_mode_field=wizard.form.domestic_return_deadline_mode formset=wizard.form.domesticReturnDeadlineFormSet formset_id="domesticReturnDeadline" only %}
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Overseas Deadlines</h3>
+                </div>
+                <div class="panel-body">
+                    <!-- Overseas Dates -->
+                    {% include "manager/wizard/date_widget.html" with date_field=wizard.form.overseas_registration_deadline date_mode_field=wizard.form.overseas_registration_deadline_mode formset=wizard.form.overseasRegistrationDeadlineFormSet formset_id="overseasRegistrationDeadline" only %}
+                    {% include "manager/wizard/date_widget.html" with date_field=wizard.form.overseas_request_deadline date_mode_field=wizard.form.overseas_request_deadline_mode formset=wizard.form.overseasRequestDeadlineFormSet formset_id="overseasRequestDeadline" only %}
+                    {% include "manager/wizard/date_widget.html" with date_field=wizard.form.overseas_return_deadline date_mode_field=wizard.form.overseas_return_deadline_mode formset=wizard.form.overseasReturnDeadlineFormSet formset_id="overseasReturnDeadline" only %}
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Military Deadlines</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row form-group">
+                        {{ wizard.form.military_dates_same_as_overseas|bootstrap:"form_group=col-xs-6 col-xs-offset-2,ignore_form_group=1"}}
+                    </div>
+                    <div class="form-group military-body">
+                        <!-- Military Dates -->
+                        {% include "manager/wizard/date_widget.html" with date_field=wizard.form.military_registration_deadline date_mode_field=wizard.form.military_registration_deadline_mode formset=wizard.form.militaryRegistrationDeadlineFormSet formset_id="militaryRegistrationDeadline" only %}
+                        {% include "manager/wizard/date_widget.html" with date_field=wizard.form.military_request_deadline date_mode_field=wizard.form.military_request_deadline_mode formset=wizard.form.militaryRequestDeadlineFormSet formset_id="militaryRequestDeadline" only %}
+                        {% include "manager/wizard/date_widget.html" with date_field=wizard.form.military_return_deadline date_mode_field=wizard.form.military_return_deadline_mode formset=wizard.form.militaryReturnDeadlineFormSet formset_id="militaryReturnDeadline" only %}
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- old -->
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                <h3 class="panel-title">Additional Dates <small>(optional)</small></h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row form-group form-inline">
+                        <div class="col-xs-12 col-xs-offset-2">
+                            {{ wizard.form.early_voting_from_date|bootstrap}}
+                            {{ wizard.form.early_voting_to_date|bootstrap}}
+                        </div>
+                    </div>
+                    <div class="row form-group form-inline">
+                        <div class="col-xs-12 col-xs-offset-2">
+                            {{ wizard.form.in_person_absentee_from_date|bootstrap}}
+                            {{ wizard.form.in_person_absentee_to_date|bootstrap}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-xs-12">
+                    {% if wizard.steps.next %}
+                    <button class="btn btn-success pull-right next" type="submit" name="xwizard_goto_step" value="{{ wizard.steps.next }}" role="button">Next</button>
+                    {% endif %}
+                    {% if wizard.steps.prev %}
+                    <button class="btn btn-default pull-left back" type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" role="button">Back</button>
+                    {% endif %}
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</form>
+{% endblock wizard_page %}
+
+
+{% block tail_uncompressed_js %}
+<script src="{% static 'js/jquery.formset.js' %}"></script>
+<script type="text/javascript">
+    $(function() {
+
+        var formPrefixes = [
+            "{{ wizard.form.domesticRegistrationDeadlineFormSet.prefix }}",
+            "{{ wizard.form.domesticRequestDeadlineFormSet.prefix }}",
+            "{{ wizard.form.domesticReturnDeadlineFormSet.prefix }}",
+            "{{ wizard.form.overseasRegistrationDeadlineFormSet.prefix }}",
+            "{{ wizard.form.overseasRequestDeadlineFormSet.prefix }}",
+            "{{ wizard.form.overseasReturnDeadlineFormSet.prefix }}",
+            "{{ wizard.form.militaryRegistrationDeadlineFormSet.prefix }}",
+            "{{ wizard.form.militaryRequestDeadlineFormSet.prefix }}",
+            "{{ wizard.form.militaryReturnDeadlineFormSet.prefix }}",
+        ]
+
+        for (var i = 0; i < formPrefixes.length; i++) {
+            var cssSelector = "div[data-formset-prefix='" + formPrefixes[i] + "']";
+            (function(cssSelector) {
+                $(cssSelector).formset({
+                    //animateForms: true
+                    add: ".add-row",
+                    deleteButton: ".delete-row"
+                });
+                $(cssSelector).on('formAdded', function(e) {
+                    var newForm = e.target;
+                    var formset = $(cssSelector).formset('getOrCreate');
+                    if (formset.activeFormCount() > 1) {
+                        formset.$formset.find('.delete-row:not(:last)').show();
+                        formset.$formset.find('.add-row:not(:last)').hide();
+                    }
+                });
+            })(cssSelector);
+        }
+
+        //
+        $('#{{ wizard.form.military_dates_same_as_overseas.auto_id }}').change(function() {
+            var $checkbox = $(this)
+            if ($checkbox.prop('checked')) {
+                $('.military-body').hide()
+            } else {
+                $('.military-body').show()
+            }
+        })
+    })
+</script>
+{% endblock tail_uncompressed_js %}

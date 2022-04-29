@@ -1,0 +1,1580 @@
+<?xml version='1.0' encoding='utf-8' ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>EOD-API</title>
+		<link type="text/css" rel="stylesheet" href="/static/api/bootstrap.css"/>
+	</head>
+	<body>
+		<p><img class="logo logo-ovf" src="/static/api/ovf-logo.png" width="230px"/><img class="logo logo-usvote" src="/static/api/usvote-logo.png" width="300px"/></p>
+		<h1 id="ElectionOfficialDirectoryAPI">Election Official Directory API</h1>
+		<h2 id="Overview">Overview</h2>
+		<p>This document is a brief technical guide to using the 
+			<strong>EOD API</strong> to interface with the
+			<br/>core EOD application service for purposes of building a customer user interface.
+		</p>
+		<h2 id="TableofContents">Table of Contents</h2>
+		<ol class="toc" style="list-style: circle;">
+			<li>
+				<a href="#ElectionOfficialDirectoryAPI">Election Official Directory API</a>
+				<ol style="list-style: circle;">
+					<li>
+						<a href="#Overview">Overview</a>
+					</li>
+					<li>
+						<a href="#TableofContents">Table of Contents</a>
+					</li>
+					<li>
+						<a href="#Changelog">Changelog</a>
+					</li>
+				</ol>
+			</li>
+			<li>
+				<a href="#GeneralConsiderationsforRESTFulAPI">General Considerations for RESTFul API</a>
+				<ol style="list-style: circle;">
+					<li>
+						<a href="#RESTFulResourcesontheWeb">RESTFul Resources on the Web</a>
+					</li>
+					<li>
+						<a href="#RequestURLs">Request URLs</a>
+					</li>
+					<li>
+						<a href="#IgnoreRule">Ignore Rule</a>
+					</li>
+					<li>
+						<a href="#QueryParameters">Query Parameters</a>
+					</li>
+					<li>
+						<a href="#Authorization">Authorization</a>
+					</li>
+					<li>
+						<a href="#CrossDomainConcerns">Cross Domain Concerns</a>
+					</li>
+					<li>
+						<a href="#Collections">Collections</a>
+					</li>
+					<li>
+						<a href="#Pagination">Pagination</a>
+					</li>
+					<li>
+						<a href="#ErrorHandling">Error Handling</a>
+					</li>
+				</ol>
+			</li>
+			<li>
+				<a href="#States">States</a>
+				<ol style="list-style: circle;">
+					<li>
+						<a href="#GetAllStates">Get All States</a>
+					</li>
+					<li>
+						<a href="#GetSpecificState">Get Specific State</a>
+					</li>
+				</ol>
+			</li>
+			<li>
+				<a href="#Regions">Regions</a>
+				<ol style="list-style: circle;">
+					<li>
+						<a href="#GetRegions">Get Regions</a>
+					</li>
+					<li>
+						<a href="#GetSpecificRegion">Get Specific Region</a>
+					</li>
+				</ol>
+			</li>
+			<li>
+				<a href="#LocalElectionOffices">Local Election Offices</a>
+				<ol style="list-style: circle;">
+					<li>
+						<a href="#GetAllLocalElectionOffices">Get All Local Election Offices</a>
+					</li>
+					<li>
+						<a href="#GetSpecificLocalElectionOffice">Get Specific Local Election Office</a>
+					</li>
+				</ol>
+			</li>
+			<li>
+				<a href="#LocalElectionOfficials">Local Election Officials</a>
+				<ol style="list-style: circle;">
+					<li>
+						<a href="#GetAllLocalElectionOfficials">Get All Local Election Officials</a>
+					</li>
+					<li>
+						<a href="#GetSpecificLocalElectionOfficial">Get Specific Local Election Official</a>
+					</li>
+				</ol>
+			</li>
+		</ol>
+		<h2 id="Changelog">Changelog</h2>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th style="text-align: left;">Revision</th>
+				<th style="text-align: left;">Date</th>
+				<th style="text-align: left;">Author</th>
+				<th style="text-align: left;">Notes</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.10</td>
+				<td style="vertical-align: top;">05/03/2018</td>
+				<td style="vertical-align: top;">Bogdan Kulbida</td>
+				<td style="vertical-align: top;">Rename `office_name` to `title` in `Officers` collection.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.9</td>
+				<td style="vertical-align: top;">04/20/2018</td>
+				<td style="vertical-align: top;">Bogdan Kulbida</td>
+				<td style="vertical-align: top;">Added Officials GEO-ID information.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.8</td>
+				<td style="vertical-align: top;">12/13/2017</td>
+				<td style="vertical-align: top;">Ian Brown</td>
+				<td style="vertical-align: top;">Reworked  `Offices`, `Addresses` and `Officials` again to properly reflect desired structure.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.7</td>
+				<td style="vertical-align: top;">12/08/2017</td>
+				<td style="vertical-align: top;">Ian Brown</td>
+				<td style="vertical-align: top;">Changed underlying data structures for `Offices`, `Addresses` and `Officials` to support setting functions for addresses and tying officials to addresses.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.6</td>
+				<td style="vertical-align: top;">07/21/2016</td>
+				<td style="vertical-align: top;">Pavel Larkin</td>
+				<td style="vertical-align: top;">Added `Ignore rule` section. Added `Additional addresses` information.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.5</td>
+				<td style="vertical-align: top;">06/21/2016</td>
+				<td style="vertical-align: top;">Pavel Larkin</td>
+				<td style="vertical-align: top;">Added Basic filtering.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.4</td>
+				<td style="vertical-align: top;">02/27/2015</td>
+				<td style="vertical-align: top;">Pavel Larkin</td>
+				<td style="vertical-align: top;">Added counties and municipalities endpoints. Added new fields to region entity.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.3</td>
+				<td style="vertical-align: top;">07/15/2014</td>
+				<td style="vertical-align: top;">Pavel Larkin</td>
+				<td style="vertical-align: top;">Change API URL, fix doc styles.</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.2</td>
+				<td style="vertical-align: top;">06/11/2014</td>
+				<td style="vertical-align: top;">Pavel Larkin</td>
+				<td style="vertical-align: top;">Added 
+					<span class="field-value">state.abbr</span> field to the state resource.<br/>Added 
+					<span class="field-value">state__abbr</span> filter to the region resource.
+				</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">0.1</td>
+				<td style="vertical-align: top;">06/06/2014</td>
+				<td style="vertical-align: top;">Pavel Larkin</td>
+				<td style="vertical-align: top;">Initial version.</td>
+			</tr>
+		</table>
+		<h1 id="GeneralConsiderationsforRESTFulAPI">General Considerations for RESTFul API</h1>
+		<p>All api requests are RESTFul. Please see following links for more background.</p>
+		<h2 id="RESTFulResourcesontheWeb">RESTFul Resources on the Web</h2>
+		<ol>
+			<li>
+				<a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">WikiPedia</a> This is good base article and also has good links to other articles
+			</li>
+			<li>
+				<a href="https://www.ibm.com/developerworks/webservices/library/ws-restful">Basic from IBM Developer Works</a> Good fundamental introduction
+			</li>
+			<li>
+				<a href="http://www.infoq.com/articles/designing-restful-http-apps-roth">RESTful HTTP in Practice</a> Good summary table of methods and response codes
+			</li>
+			<li>
+				<a href="http://code.google.com/apis/gdata/docs/2.0/reference.html">Google Data</a> Nice model to follow, provides model for authentication as well
+			</li>
+			<li>
+				<a href="http://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">The Bible</a> Fielding&#8217;s article
+			</li>
+			<li>
+				<a href="http://oreilly.com/catalog/9780596529260">Good Book?</a> It is an OReilly...
+			</li>
+		</ol>
+		<h2 id="RequestURLs">Request URLs</h2>
+		<p>Request URLs are composed from the protocol, host, context path, a resource path, and optional query parameters.</p>
+		<pre><code>{{ api_url }}/states/1
+</code></pre>
+		<p>In this example the protocol is &#8220;http&#8221;, the host &#8220;{{ api_host }}&#8221;, the context path is &#8220;{{ api_suffix }}&#8221;, the resource path is &#8220;/states/1&#8221;, where the last portion of the path in this case identifies the state id.</p>
+		<h2 id="IgnoreRule">Ignore Rule</h2>
+		<p>The API may add fields to response without changing versions number. When interacting with the API, clients must ignore unknown fields.</p>
+		<h2 id="QueryParameters">Query Parameters</h2>
+		<p>Additional parameters for any request MAY be passed via the query string portion of the request URL.</p>
+		<p>Here is an example of a request with query parameters.</p>
+		<pre><code>{{ api_url }}/regions?state=1
+</code></pre>
+		<p>In this example the request is for the first page of regions filtered by state.</p>
+		<h3 id="BasicFiltering">Basic Filtering</h3>
+		<p>We also support filtering on the resources' fields. Valid filtering values are: 
+			<a href="https://docs.djangoproject.com/en/dev/ref/models/querysets/#field-lookups">Django ORM filters</a> (e.g. istartswith, exact, icontains).
+		</p>
+		<pre><code>{{ api_url }}/regions?county_name__istartswith=wash
+</code></pre>
+		<p>In this example the request is for the first page of regions filtered by county name starting with &#8216;wash&#8217;.</p>
+		<h2 id="Authorization">Authorization</h2>
+		<p>Access to the API is secured using OAuth2 (two legged model). All requests must include an appropriately created 
+			<strong>Authorization</strong> header or pass an access token as query parameter.
+		</p>
+		<h3 id="AccesstotheAPIusignAuthorizationheader">Access to the API usign Authorization header</h3>
+		<p>You can pass 
+			<strong>Authorization</strong> header with 
+			<strong>OAuth valid_access_token</strong> value in HTTP request
+		</p>
+		<h4 id="Example">Example</h4>
+		<pre><code>$ curl -v -H "Authorization: OAuth valid_access_token" {{ api_url }}/states/2
+*   Trying X.X.X.X...
+* Connected to api.usvotefoundation.org (X.X.X.X) port 80 (#0)
+&gt; GET {{ api_suffix }}states/2 HTTP/1.1
+&gt; User-Agent: curl/7.35.0
+&gt; Host: api.usvotefoundation.org
+&gt; Accept: */*
+&gt; Authorization: OAuth valid_access_token
+&gt;
+&lt; HTTP/1.1 200 OK
+* Server nginx/1.4.6 (Ubuntu) is not blacklisted
+&lt; Server: nginx/1.4.6 (Ubuntu)
+&lt; Content-Type: application/json
+&lt; Content-Length: 73
+&lt; Connection: keep-alive
+&lt; Expires: Mon, 05 Jun 2014 16:34:40 GMT
+&lt; Vary: Accept
+&lt; Last-Modified: Mon, 05 Jun 2014 15:34:40 GMT
+&lt; Cache-Control: max-age=3600, s-maxage=3600
+&lt; Date: Mon, 05 Jun 2014 15:35:23 GMT
+&lt; X-Frame-Options: SAMEORIGIN
+&lt;
+{
+    "id": 2,
+    "name": "Alaska",
+    "abbr": "AK",
+    "resource_uri": "{{ api_suffix }}states/2"
+}
+</code></pre>
+		<h3 id="AccesstotheAPIusignqueryparameter">Access to the API usign query parameter</h3>
+		<p>You can pass 
+			<strong>oauth_consumer_key</strong> query paramater with 
+			<strong>valid_access_token</strong> value
+		</p>
+		<h4 id="Example2">Example</h4>
+		<pre><code>$ curl -v {{ api_url }}/states/3?oauth_consumer_key=valid_access_token
+*   Trying X.X.X.X...
+* Connected to api.usvotefoundation.org (X.X.X.X) port 80 (#0)
+&gt; GET {{ api_suffix }}states/3?oauth_consumer_key=valid_access_token HTTP/1.1
+&gt; User-Agent: curl/7.35.0
+&gt; Host: api.usvotefoundation.org
+&gt; Accept: */*
+&gt;
+&lt; HTTP/1.1 200 OK
+* Server nginx/1.4.6 (Ubuntu) is not blacklisted
+&lt; Server: nginx/1.4.6 (Ubuntu)
+&lt; Content-Type: application/json
+&lt; Content-Length: 81
+&lt; Connection: keep-alive
+&lt; Expires: Mon, 05 Jun 2014 16:41:10 GMT
+&lt; Vary: Accept
+&lt; Last-Modified: Mon, 05 Jun 2014 15:41:10 GMT
+&lt; Cache-Control: max-age=3600, s-maxage=3600
+&lt; Date: Mon, 05 Jun 2014 15:41:10 GMT
+&lt; X-Frame-Options: SAMEORIGIN
+&lt;
+{
+    "id": 3,
+    "name": "American Samoa",
+    "resource_uri": "{{ api_suffix }}states/3"
+}
+</code></pre>
+		<h2 id="CrossDomainConcerns">Cross Domain Concerns</h2>
+		<p>Access to the API is possible through either client (ie AJAX/Javascript) or server (ie PHP, server side logic). Note however that when making client requests, care must be taken to avoid cross domain restrictions. In such cases it may be necessary to use a proxy server or other strategy, such as JSONP, to avoid cross domain issues.</p>
+		<h2 id="Collections">Collections</h2>
+		<p>Queries that can return more than 1 item in the response will be wrapped inside an &#8220;array&#8221; element. For example in JSON:</p>
+		<pre><code>[
+    {"foo":1},
+    {"foo":2}
+]
+</code></pre>
+		<h2 id="Pagination">Pagination</h2>
+		<p>Some resource paths may also support &#8220;meta&#8221; which allows for stepping through a large collection without returning it entirely. Resource paths that support pagination do so with &#8220;limit&#8221; and &#8220;offset&#8221; parameters.</p>
+		<p>The format of the response to a resource path that supports pagination will be in a two part hash map, the first part, named &#8220;meta&#8221; will include a number of fields that describe the &#8220;total_count&#8221; collection size and convenience URL&#8217;s to move through the collection. The second part of the map, named &#8220;objects&#8221; will include the actual data objects for that request, ie the current &#8220;page&#8221;.</p>
+		<h3 id="PaginationConvenienceURLs">Pagination Convenience URL&#8217;s</h3>
+		<ul>
+			<li>
+				<strong>offset</strong> - current offset
+			</li>
+			<li>
+				<strong>limit</strong> - the number of objects per page
+			</li>
+			<li>
+				<strong>total_count</strong> - total objects
+			</li>
+			<li>
+				<strong>previous</strong> - A URI that refers to the immediately preceding page in a "paged collection"
+			</li>
+			<li>
+				<strong>next</strong> - A URI that refers to the immediately following page in a "paged collection"
+			</li>
+		</ul>
+		<h3 id="PaginationExample">Pagination Example</h3>
+		<pre><code>{
+    "meta": {
+        "limit": 20,
+        "offset": 0,
+        "previous": null,
+        "next": "{{ api_suffix }}regions?state=1&amp;limit=20&amp;offset=20",
+        "total_count": 68
+    },
+    "objects":[ {...}, ],
+}
+</code></pre>
+		<h2 id="ErrorHandling">Error Handling</h2>
+		<p>The API, being RESTFul, is reliant on standard HTTP status codes for error handling.</p>
+		<h3 id="HTTPStatusCodes">HTTP Status Codes</h3>
+		<p>The API returns the following HTTP status codes for every request:</p>
+		<ul>
+			<li>
+				<strong>200 OK</strong>: Success
+			</li>
+			<li>
+				<strong>400 Bad Request</strong>: The request was invalid. An accompanying error message will explain why.
+			</li>
+			<li>
+				<strong>401 Unauthorized</strong>: Missing or bad authentication.
+			</li>
+			<li>
+				<strong>404 Not Found</strong>: The resource requested, such as an actor, does not exist.
+			</li>
+			<li>
+				<strong>409 Conflict</strong>: The request would result in a resource conflict (ie email already exists)
+			</li>
+			<li>
+				<strong>5xx Internal Server Error</strong>: Something is broken.
+			</li>
+		</ul>
+		<h3 id="ErrorMessages">Error Messages</h3>
+		<p>The API returns error messages in JSON format.</p>
+		<pre><code>{
+    "error": "Invalid resource lookup data provided (mismatched type)."
+}
+</code></pre>
+		<h1 id="States">States</h1>
+		<p>Methods for working with state resources.</p>
+		<h2 id="GetAllStates">Get All States</h2>
+		<p>This method is used to retrieve all states.</p>
+		<h3 id="URL">URL</h3>
+		<pre><code>/states
+</code></pre>
+		<p>Supported Formats: 
+			<strong>JSON</strong>
+			<br/>Supported Request Methods: 
+			<strong>GET</strong>
+		</p>
+		<h3 id="Parameters">Parameters</h3>
+		<p>None</p>
+		<h3 id="ExampleRequest">Example Request</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/states
+		</p>
+		<h3 id="ExampleResponse">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}states?limit=20&amp;offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 55
+    },
+    "objects": [
+        {
+            "id": 1,
+            "abbr": "AL",
+            "name": "Alabama",
+            "resource_uri": "{{ api_suffix }}states/1"
+        },
+        {
+            "id": 2,
+            "abbr": "AK",
+            "name": "Alaska",
+            "resource_uri": "{{ api_suffix }}states/2"
+        },
+        {
+            "id": 3,
+            "abbr": "AS",
+            "name": "American Samoa",
+            "resource_uri": "{{ api_suffix }}states/3"
+        },
+        ...
+    ]
+}
+</code></pre>
+		<h2 id="GetSpecificState">Get Specific State</h2>
+		<p>This method is used to retrieve specific state by id.</p>
+		<h3 id="URL2">URL</h3>
+		<pre><code>/states/&lt;state_id&gt;
+</code></pre>
+		<p>Supported Formats: 
+			<strong>JSON</strong>
+			<br/>Supported Request Methods: 
+			<strong>GET</strong>
+		</p>
+		<h3 id="Parameters2">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Name</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>state_id</strong><br/>
+					<span style="color:gray">
+						<sup>required</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;">identifies the state</td>
+			</tr>
+		</table>
+		<h3 id="ExampleRequest2">Example Request</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/states/1
+		</p>
+		<h3 id="ExampleResponse2">Example Response</h3>
+		<pre><code>{
+    "id": 1,
+    "name": "Alabama",
+    "abbr": "AL",
+    "resource_uri": "{{ api_suffix }}states/1"
+}
+</code></pre>
+		<h1 id="Regions">Regions</h1>
+		<p>Methods for working with region resources.</p>
+		<h2 id="GetRegions">Get Regions</h2>
+		<p>This method is used to retrieve all regions or specific regions by state.</p>
+		<h3 id="URL3">URL</h3>
+		<pre><code>/regions[?state=&lt;state_id&gt;][?state_abbr=&lt;abbr&gt;][&amp;county=&lt;county&gt;][&amp;county_name=&lt;county_name&gt;][&amp;municipality=&lt;municipality&gt;][&amp;municipality_name=&lt;municipality_name&gt;][&amp;municipality_type=&lt;municipality_type&gt;][&amp;region_name=&lt;region_name&gt;][&amp;state=&lt;state&gt;][&amp;state_abbr=&lt;state_abbr&gt;][&amp;state_name=&lt;state_name&gt;]
+</code></pre>
+		<h3 id="Parameters3">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Name</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th class="field-type" style="text-align: left;">Filter 
+					<span style="color:gray">
+						<sup>
+							<sup class="footnote">
+								<a href="#___fn1">1</a>
+							</sup>
+						</sup>
+					</span>
+				</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>county</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;"></td>
+				<td style="vertical-align: top;">optionally regions filter by county id</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>county_name</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td>yes</td>
+				<td style="vertical-align: top;">optionally regions filter by county name</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>municipality</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;"></td>
+				<td style="vertical-align: top;">optionally regions filter by municipality id</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>municipality_name</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td>yes</td>
+				<td style="vertical-align: top;">optionally regions filter by municipality name</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>municipality_type</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td>yes</td>
+				<td style="vertical-align: top;">optionally regions filter by municipality type</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>region_name</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td>yes</td>
+				<td style="vertical-align: top;">optionally regions filter by region name</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>state</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;"></td>
+				<td style="vertical-align: top;">optionally regions filter by state id</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>state_abbr</strong> or 
+					<strong>state__abbr</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td style="vertical-align: top;"></td>
+				<td style="vertical-align: top;">optionally regions filter by state abbreviation. See 
+					<span class="field-value">abbr</span> field on the state resource
+				</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>state_name</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td style="vertical-align: top;"></td>
+				<td style="vertical-align: top;">optionally regions filter by state name</td>
+			</tr>
+		</table>
+		<p>
+			<sup class="footnote">
+				<a href="#___fn1">1</a>
+			</sup> See 
+			<a href="#BasicFiltering">Basic Filtering</a>
+		</p>
+		<h3 id="ExampleRequestAllRegions">Example Request (All Regions)</h3>
+		<p>{{ api_url }}/regions</p>
+		<h3 id="ExampleResponse3">Example Response</h3>
+		<p>{{ api_url }}/regions</p>
+		<pre><code>{
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}regions?limit=20&amp;offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 7437
+    },
+    "objects": [
+        {
+            "id": 487,
+            "county": "{{ api_suffix }}counties/1",
+            "county_name": "Washington",
+            "municipality": "{{ api_suffix }}municipalities/1",
+            "municipality_name": "munic",
+            "municipality_type": "type",
+            "region_name": "Autauga County",
+            "resource_uri": "{{ api_suffix }}regions/487",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+        "state_name": "Alabama"
+        },
+        {
+            "id": 488,
+            "county": null,
+            "county_name": null,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Baldwin County",
+            "resource_uri": "{{ api_suffix }}regions/488",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+            "state_name": "Alabama"
+        },
+        ...
+    ]
+}
+</code></pre>
+		<h3 id="ExampleRequestSpecificRegionsbyState">Example Request (Specific Regions by State)</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/regions?state=1
+		</p>
+		<h3 id="ExampleResponse4">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}regions?state=1&amp;limit=20&amp;offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 68
+    },
+    "objects": [
+        {
+            "county": "{{ api_suffix }}counties/1",
+            "county_name": "Washington",
+            "id": 487,
+            "municipality": "{{ api_suffix }}municipalities/1",
+            "municipality_name": "munic",
+            "municipality_type": "type",
+            "region_name": "Autauga County",
+            "resource_uri": "{{ api_suffix }}regions/487",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+            "state_name": "Alabama"
+        },
+        {
+            "county": null,
+            "county_name": null,
+            "id": 488,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Baldwin County",
+            "resource_uri": "{{ api_suffix }}regions/488",
+            "state": "{{ api_suffix }}states/1",
+            "state_abbr": "AL",
+            "state_name": "Alabama"
+        },
+        ...
+    ]
+}
+</code></pre>
+		<h3 id="ExampleRequestSpecificRegionsbyStateAbbreviation">Example Request (Specific Regions by State Abbreviation)</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/regions?state_abbr=VT
+		</p>
+		<h3 id="ExampleResponse5">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "limit": 20,
+        "next": "{{ api_suffix }}regions?oauth_consumer_key=1&amp;limit=20&amp;state_abbr=VT&amp;offset=20",
+        "offset": 0,
+        "previous": null,
+        "total_count": 246
+    },
+    "objects": [
+        {
+            "county": null,
+            "county_name": null,
+            "id": 4820,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Addison",
+            "resource_uri": "{{ api_suffix }}regions/4820",
+            "state": "{{ api_suffix }}states/50",
+            "state_abbr": "VT",
+            "state_name": "Vermont"
+        },
+        {
+            "county": null,
+            "county_name": null,
+            "id": 4821,
+            "municipality": null,
+            "municipality_name": null,
+            "municipality_type": null,
+            "region_name": "Albany",
+            "resource_uri": "{{ api_suffix }}regions/4821",
+            "state": "{{ api_suffix }}states/50",
+            "state_abbr": "VT",
+            "state_name": "Vermont"
+        },
+        ...
+    ]
+}
+</code></pre>
+		<h2 id="GetSpecificRegion">Get Specific Region</h2>
+		<p>This method is used to retrieve specific region by id.</p>
+		<h3 id="URL4">URL</h3>
+		<pre><code>/regions/&lt;region_id&gt;
+</code></pre>
+		<p>Supported Formats: 
+			<strong>JSON</strong>
+			<br/>Supported Request Methods: 
+			<strong>GET</strong>
+		</p>
+		<h3 id="Parameters4">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Name</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>region_id</strong><br/>
+					<span style="color:gray">
+						<sup>required</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;">identifies the region</td>
+			</tr>
+		</table>
+		<h3 id="ExampleRequest3">Example Request</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/regions/496
+		</p>
+		<h3 id="ExampleResponse6">Example Response</h3>
+		<pre><code>{
+    "id": 496,
+    "region_name": "Cherokee County",
+    "resource_uri": "{{ api_suffix }}regions/496",
+    "county": null,
+    "county_name": null,
+    "municipality": null,
+    "municipality_name": null,
+    "municipality_type": null,
+    "state": "{{ api_suffix }}states/1",
+    "state_abbr": "AL",
+    "state_name": "Alabama"
+}
+</code></pre>
+		<h1 id="LocalElectionOffices">Local Election Offices</h1>
+		<p>Methods for working with local election offices.</p>
+		<h2 id="GetAllLocalElectionOffices">Get All Local Election Offices</h2>
+		<p>This method is used to retrieve all offices or specific offices by region.</p>
+		<h3 id="URL5">URL</h3>
+		<pre><code>/offices[?region=&lt;region_id&gt;]
+</code></pre>
+		<h3 id="Parameters5">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Name</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>region_id</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;">optionally offices filter by region</td>
+			</tr>
+		</table>
+		<h3 id="Parameters5">Address Functions</h3>
+		<p>Information about what types of voters and methods the address serves.</p>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Function Code</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>DOM_VR</strong>
+				</td>
+				<td style="vertical-align: top;">Domestic Voter Registration</td>
+			</tr>
+					<tr>
+				<td style="vertical-align: top;">
+					<strong>DOM_REQ</strong>
+				</td>
+				<td style="vertical-align: top;">Domestic Voter Vote-by-Mail (Absentee) Ballot Request Address</td>
+			</tr>
+					<tr>
+				<td style="vertical-align: top;">
+					<strong>DOM_RET</strong>
+				</td>
+				<td style="vertical-align: top;">Domestic Voter Vote-by-Mail (Absentee) Ballot Return Address</td>
+			</tr>
+					<tr>
+				<td style="vertical-align: top;">
+					<strong>OVS_REQ</strong>
+				</td>
+				<td style="vertical-align: top;">Overseas/Military Voter Registration/Ballot Request Address</td>
+			</tr>
+					<tr>
+				<td style="vertical-align: top;">
+					<strong>OVS_RET</strong>
+				</td>
+				<td style="vertical-align: top;">Overseas/Military Vote-by-Mail (Absentee) Ballot Return Address</td>
+			</tr>
+		</table>
+		<h3 id="ExampleRequestAllOffices">Example Request (All Offices)</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/offices
+		</p>
+		<h3 id="ExampleResponse7">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 7972,
+        "next": "{{ api_suffix }}/offices?limit=20&amp;offset=20",
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 487,
+            "updated": "2017-06-04T04:46:48Z",
+            "region": "{{ api_suffix }}/regions/487",
+            "email": "ovf-anonymized@test.com",
+            "website": "http://www.autaugaco.org",
+            "hours": "8a-4:30p, M-F Central time",
+            "notes": "If you have never registered to vote or have not kept your registration current, you must contact the Board of Registrars - see above contact information.",
+            "status": 1,
+            "addresses": [
+                {
+                    "id": 973,
+                    "address_to": "Board of Registrars",
+                    "street1": "218 N Court St",
+                    "street2": "",
+                    "city": "PRATTVILLE",
+                    "state": "AL",
+                    "zip": "36067",
+                    "zip4": "3041",
+                    "website": "",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/1",
+                    "contacts": [
+                        {
+                            "id": 4834,
+                            "address_uri": "{{ api_suffix }}/addresses/973",
+                            "officer_uri": "{{ api_suffix }}/officials/1"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/973"
+                },
+                {
+                    "id": 974,
+                    "address_to": "Board of Registrars",
+                    "street1": "PO BOX 680036",
+                    "street2": "218 N Court St",
+                    "city": "PRATTVILLE",
+                    "state": "AL",
+                    "zip": "36068",
+                    "zip4": "3004",
+                    "website": "",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/1",
+                    "contacts": [
+                        {
+                            "id": 19,
+                            "address_uri": "{{ api_suffix }}/addresses/974",
+                            "officer_uri": "{{ api_suffix }}/officials/1"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/974"
+                }
+            ],
+            "officers": [
+                {
+                    "id": 18472,
+                    "office_type": "additional",
+                    "job_title": "Chief Election Official - Judge of Probate",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Alfred",
+                    "initial": "",
+                    "last_name": "Booth",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 361-3728",
+                    "fax": "",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/18472"
+                },
+                {
+                    "id": 8192,
+                    "office_type": "secondary",
+                    "job_title": "Circuit Clerk/Absentee Election Manager",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "Debra",
+                    "initial": "",
+                    "last_name": "Hill",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 358-6801",
+                    "fax": "(334) 361-4830",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/8192"
+                },
+                {
+                    "id": 1,
+                    "office_type": "primary",
+                    "job_title": "Board of Registrars",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "New Voter Registrations",
+                    "initial": "",
+                    "last_name": "",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 358-6740",
+                    "fax": "(334) 364-4822",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/1"
+                },
+                {
+                    "id": 60247,
+                    "office_type": "additional",
+                    "job_title": "Absentee Election Manager",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Beth",
+                    "initial": "",
+                    "last_name": "George",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(334) 303-1178",
+                    "fax": "",
+                    "office_uri": "{{ api_suffix }}/offices/487",
+                    "resource_uri": "{{ api_suffix }}/officials/60247"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/offices/487"
+        },
+        {
+            "id": 488,
+            "updated": "2017-05-18T08:16:18Z",
+            "region": "{{ api_suffix }}/regions/488",
+            "email": "ovf-anonymized@test.com",
+            "website": "http://www.baldwincountyal.gov",
+            "hours": "M-F: 8a-4:30p Central",
+            "notes": "If you have never registered to vote or have not kept your registration current, you must contact the Board of Registrars at (251) 937-0305 or email baldwin@vote.alabama.gov.  They will follow up with you about next steps.\r\n",
+            "status": 1,
+            "addresses": [
+                {
+                    "id": 975,
+                    "address_to": "Board of Registrars",
+                    "street1": "119 W 2nd St",
+                    "street2": "",
+                    "city": "Bay MINETTE",
+                    "state": "AL",
+                    "zip": "36507",
+                    "zip4": "",
+                    "website": "",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/2",
+                    "contacts": [
+                        {
+                            "id": 4828,
+                            "address_uri": "{{ api_suffix }}/addresses/975",
+                            "officer_uri": "{{ api_suffix }}/officials/2"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/975"
+                },
+                {
+                    "id": 976,
+                    "address_to": "Board of Registrars",
+                    "street1": "PO Box 1507",
+                    "street2": "",
+                    "city": "BAY MINETTE",
+                    "state": "AL",
+                    "zip": "36507",
+                    "zip4": "1507",
+                    "website": "",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/2",
+                    "contacts": [
+                        {
+                            "id": 1,
+                            "address_uri": "{{ api_suffix }}/addresses/976",
+                            "officer_uri": "{{ api_suffix }}/officials/2"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}/addresses/976"
+                }
+            ],
+            "officers": [
+                {
+                    "id": 18473,
+                    "office_type": "additional",
+                    "job_title": "Election Coordinator",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Violetta",
+                    "initial": "",
+                    "last_name": "Smith",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(251) 937-0285",
+                    "fax": "(251) 580-1834",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/18473"
+                },
+                {
+                    "id": 8193,
+                    "office_type": "secondary",
+                    "job_title": "Absentee Election Manager",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "Jody",
+                    "initial": "",
+                    "last_name": "Wise Campbell",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(251) 937-0379",
+                    "fax": "(251) 937-0277",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/8193"
+                },
+                {
+                    "id": 2,
+                    "office_type": "primary",
+                    "job_title": "Board of Registrars",
+                    "title": "The Honorable",
+                    "suffix": "",
+                    "first_name": "",
+                    "initial": "",
+                    "last_name": "",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(251) 937-0305",
+                    "fax": "(251) 580-2522",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/2"
+                },
+                {
+                    "id": 18478,
+                    "office_type": "additional",
+                    "job_title": "Chief Election Officer - Judge of Probate",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Tim",
+                    "initial": "",
+                    "last_name": "Russell",
+                    "email": "",
+                    "phone": "(215) 937-0285",
+                    "fax": "(251) 580-1834",
+                    "office_uri": "{{ api_suffix }}/offices/488",
+                    "resource_uri": "{{ api_suffix }}/officials/18478"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/offices/488"
+        },
+          ...
+    ]
+}
+</code></pre>
+		<h3 id="ExampleRequestSpecificOfficesbyRegion">Example Request (Specific Offices by Region)</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/offices?region=3763
+		</p>
+		<h3 id="ExampleResponse8">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 1,
+        "next": null,
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 3757,
+            "updated": "2017-04-27T02:44:36Z",
+            "region": "{{ api_suffix }}/regions/3763",
+            "email": "ovf-anonymized@test.com",
+            "website": "http://www.oceancountyclerk.com/default.htm",
+            "hours": "Monday thru Friday 8:00 am to 4:30 pm",
+            "notes": "The County Clerk issues the Vote by Mail (absentee) ballots; Voted ballots are returned to the Board of Elections. Military and Overseas Voters have the option to receive or send their ballots by email or fax. Please follow the instructions for ballot return. Please contact our office for more details.\r\n\r\n",
+            "status": 1,
+            "addresses": [
+                {
+                    "id": 7516,
+                    "address_to": "Ocean County Board of Elections",
+                    "street1": "129 Hooper Ave",
+                    "street2": "PO Box 2006",
+                    "city": "Toms River",
+                    "state": "NJ",
+                    "zip": "08754",
+                    "zip4": "2006",
+                    "website": "",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}/officials/2505",
+                    "contacts": [
+                        {
+                            "id": 6495,
+                            "address_uri": "{{ api_suffix }}/addresses/7516",
+                            "officer_uri": "{{ api_suffix }}/officials/2505"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}  /addresses/7516"
+                },
+                {
+                    "id": 7515,
+                    "address_to": "Ocean County Board of Elections",
+                    "street1": "129 Hooper Ave",
+                    "street2": "",
+                    "city": "Toms River",
+                    "state": "NJ",
+                    "zip": "08753",
+                    "zip4": "2006",
+                    "website": "",
+                    "functions": [
+                        "DOM_VR",
+                        "DOM_REQ",
+                        "DOM_RET",
+                        "OVS_REQ",
+                        "OVS_RET"
+                    ],
+                    "primary_contact_uri": "{{ api_suffix }}  /officials/2505",
+                    "contacts": [
+                        {
+                            "id": 6494,
+                            "address_uri": "{{ api_suffix }}/addresses/7515",
+                            "officer_uri": "{{ api_suffix }}/officials/2505"
+                        }
+                    ],
+                    "resource_uri": "{{ api_suffix }}  /addresses/7515"
+                }
+            ],
+            "officers": [
+                {
+                    "id": 56759,
+                    "office_type": "additional",
+                    "job_title": "Voter Registration Inquiries",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "",
+                    "initial": "",
+                    "last_name": "",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(732) 929-2167",
+                    "fax": "(732) 506-5110",
+                    "office_uri": "{{ api_suffix }}  /offices/3757",
+                    "resource_uri": "{{ api_suffix }}  /officials/56759"
+                },
+                {
+                    "id": 10695,
+                    "office_type": "secondary",
+                    "job_title": "Absentee Voter Clerk",
+                    "title": "",
+                    "suffix": "",
+                    "first_name": "Donna",
+                    "initial": "",
+                    "last_name": "Haddon",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(732) 929-2152",
+                    "fax": "(732) 349-4336",
+                    "office_uri": "{{ api_suffix }}/offices/3757",
+                    "resource_uri": "{{ api_suffix }}/officials/10695"
+                },
+                {
+                    "id": 2505,
+                    "office_type": "primary",
+                    "job_title": "Local Election Official",
+                    "title": "Hon",
+                    "suffix": "",
+                    "first_name": "Scott  M",
+                    "initial": "W",
+                    "last_name": "Colabella",
+                    "email": "ovf-anonymized@test.com",
+                    "phone": "(732) 929-2018",
+                    "fax": "(732) 349-4336",
+                    "office_uri": "{{ api_suffix }}/offices/3757",
+                    "resource_uri": "{{ api_suffix }}/officials/2505"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/offices/3757"
+        }
+    ]
+}
+</code></pre>
+		<h2 id="GetSpecificLocalElectionOffice">Get Specific Local Election Office</h2>
+		<p>This method is used to retrieve specific local election office by id.</p>
+		<h3 id="URL6">URL</h3>
+		<pre><code>/offices/&lt;office_id&gt;
+</code></pre>
+		<p>Supported Formats: 
+			<strong>JSON</strong>
+			<br/>Supported Request Methods: 
+			<strong>GET</strong>
+		</p>
+		<h3 id="Parameters6">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Name</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>office_id</strong><br/>
+					<span style="color:gray">
+						<sup>required</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;">identifies the office</td>
+			</tr>
+		</table>
+		<h3 id="ExampleRequest4">Example Request</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/offices/20673
+		</p>
+		<h3 id="ExampleResponse9">Example Response</h3>
+		<pre><code>{
+    "id": 20673,
+    "updated": "2017-09-12T11:05:49Z",
+    "region": "{{ api_suffix }}/regions/20680",
+    "email": "",
+    "website": "http://winchesterwi.com",
+    "hours": "By Appointment Only",
+    "notes": "",
+    "status": 1,
+    "addresses": [
+        {
+            "id": 42409,
+            "address_to": "Cynthia Guzman",
+            "street1": "1154 Harris Lake Road W",
+            "street2": "",
+            "city": "Winchester",
+            "state": "WI",
+            "zip": "54557",
+            "zip4": "",
+            "website": "Http://winchesterwi.com",
+            "functions": [],
+            "primary_contact_uri": "{{ api_suffix }}/officials/42211",
+            "contacts": [
+                {
+                    "id": 12191,
+                    "address_uri": "{{ api_suffix }}/addresses/42409",
+                    "officer_uri": "{{ api_suffix }}/officials/42211"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/addresses/42409"
+        },
+        {
+            "id": 41460,
+            "address_to": "Municipal Clerk",
+            "street1": "1147 Harris Lake Rd W",
+            "street2": "",
+            "city": "Winchester",
+            "state": "WI",
+            "zip": "54557",
+            "zip4": "8917",
+            "website": "",
+            "functions": [
+                "DOM_VR",
+                "DOM_REQ",
+                "DOM_RET",
+                "OVS_REQ",
+                "OVS_RET"
+            ],
+            "primary_contact_uri": "{{ api_suffix }}/officials/42211",
+            "contacts": [
+                {
+                    "id": 12190,
+                    "address_uri": "{{ api_suffix }}/addresses/41460",
+                    "officer_uri": "{{ api_suffix }}/officials/42211"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/addresses/41460"
+        },
+        {
+            "id": 41461,
+            "address_to": "Municipal Clerk",
+            "street1": "1147 Harris Lake Rd W",
+            "street2": "",
+            "city": "Winchester",
+            "state": "WI",
+            "zip": "54557",
+            "zip4": "8917",
+            "website": "",
+            "functions": [
+                "DOM_VR",
+                "DOM_REQ",
+                "DOM_RET",
+                "OVS_REQ",
+                "OVS_RET"
+            ],
+            "primary_contact_uri": "{{ api_suffix }}/officials/42211",
+            "contacts": [
+                {
+                    "id": 4541,
+                    "address_uri": "{{ api_suffix }}/addresses/41461",
+                    "officer_uri": "{{ api_suffix }}/officials/42211"
+                }
+            ],
+            "resource_uri": "{{ api_suffix }}/addresses/41461"
+        }
+    ],
+    "officers": [
+        {
+            "id": 42212,
+            "office_type": "secondary",
+            "job_title": "Town Clerk",
+            "title": "",
+            "suffix": "",
+            "first_name": "Ruth",
+            "initial": "",
+            "last_name": "Allis",
+            "email": "ovf-anonymized@test.com",
+            "phone": "(715) 686-2123",
+            "fax": "(715) 686-2488",
+            "office_uri": "{{ api_suffix }}/offices/20673",
+            "resource_uri": "{{ api_suffix }}/officials/42212"
+        },
+        {
+            "id": 42211,
+            "office_type": "primary",
+            "job_title": "Local Election Official",
+            "title": "",
+            "suffix": "",
+            "first_name": "Ruth",
+            "initial": "",
+            "last_name": "Allis",
+            "email": "ovf-anonymized@test.com",
+            "phone": "(715) 686-2123",
+            "fax": "(715) 686-2488",
+            "office_uri": "{{ api_suffix }}/offices/20673",
+            "resource_uri": "{{ api_suffix }}/officials/42211"
+        }
+    ],
+    "resource_uri": "{{ api_suffix }}/offices/20673"
+}
+</code></pre>
+		<h1 id="LocalElectionOfficials">Local Election Officials</h1>
+		<p>Methods for working with local election officials.</p>
+		<h2 id="GetAllLocalElectionOfficials">Get All Local Election Officials</h2>
+		<p>This method is used to retrieve all officials or specific officials by office and/or office type.</p>
+		<h3 id="URL7">URL</h3>
+		<pre><code>/officials[?office=&lt;office_id&gt;][&amp;office_type=&lt;office_type&gt;]
+</code></pre>
+		<h3 id="Parameters7">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Field</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>office_id</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;">optionally officials filter by office</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>office_type</strong><br/>
+					<span style="color:gray">
+						<sup>optional</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">String</td>
+				<td style="vertical-align: top;">optionally officials filter by office type.<br/>
+					<strong>Values</strong>: 
+					<span class="field-value">primary</span>, 
+					<span class="field-value">secondary</span>, 
+					<span class="field-value">additional</span>
+				</td>
+			</tr>
+		</table>
+		<h3 id="ExampleRequestGetAllOfficials">Example Request (Get All Officials)</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/officials
+		</p>
+		<h3 id="ExampleResponse10">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 28529,
+        "next": "{{ api_suffix }}/officials?limit=20&amp;offset=20",
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 43383,
+            "office_type": "additional",
+            "job_title": "",
+            "title": "",
+            "suffix": "",
+            "first_name": "",
+            "initial": "",
+            "last_name": "",
+            "email": "",
+            "phone": "",
+            "fax": "",
+            "office_uri": null,
+            "resource_uri": "{{ api_suffix }}/officials/43383",
+            "geoid": ""
+        },
+        {
+            "id": 43384,
+            "office_type": "additional",
+            "job_title": "",
+            "title": "",
+            "suffix": "",
+            "first_name": "",
+            "initial": "",
+            "last_name": "",
+            "email": "",
+            "phone": "",
+            "fax": "",
+            "office_uri": null,
+            "resource_uri": "{{ api_suffix }}/officials/43384",
+            "geoid": ""
+        },
+        {
+            "id": 43385,
+            "office_type": "additional",
+            "job_title": "",
+            "title": "",
+            "suffix": "",
+            "first_name": "",
+            "initial": "",
+            "last_name": "",
+            "email": "",
+            "phone": "",
+            "fax": "",
+            "office_uri": null,
+            "resource_uri": "{{ api_suffix }}/officials/43385",
+            "geoid": ""
+        },
+        ...
+    ]
+}
+</code></pre>
+		<h3 id="ExampleRequestGetOfficialbySpecificOfficeandOfficeType">Example Request (Get Official by Specific Office and Office Type)</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/officials?office=700&amp;office_type=primary
+		</p>
+		<h3 id="ExampleResponse11">Example Response</h3>
+		<pre><code>{
+    "meta": {
+        "offset": 0,
+        "limit": 20,
+        "total_count": 1,
+        "next": null,
+        "previous": null
+    },
+    "objects": [
+        {
+            "id": 213,
+            "office_type": "primary",
+            "job_title": "Local Election Official",
+            "title": "Ms.",
+            "suffix": "",
+            "first_name": "Michelle",
+            "initial": "T",
+            "last_name": "Baldwin",
+            "email": "ovf-anonymized@test.com",
+            "phone": "(559) 624-7300",
+            "fax": "(559) 737-4498",
+            "office_uri": "{{ api_suffix }}/offices/700",
+            "resource_uri": "{{ api_suffix }}/officials/213"
+        }
+    ]
+}
+</code></pre>
+		<h2 id="GetSpecificLocalElectionOfficial">Get Specific Local Election Official</h2>
+		<p>This method is used to retrieve specific local election official by id.</p>
+		<h3 id="URL8">URL</h3>
+		<pre><code>/officials/&lt;official_id&gt;
+</code></pre>
+		<p>Supported Formats: 
+			<strong>JSON</strong>
+			<br/>Supported Request Methods: 
+			<strong>GET</strong>
+		</p>
+		<h3 id="Parameters8">Parameters</h3>
+		<table class="table table-responsive table-condensed">
+			<tr>
+				<th class="field-name" style="text-align: left;">Name</th>
+				<th class="field-type" style="text-align: left;">Type</th>
+				<th style="text-align: left;">Description</th>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<strong>official_id</strong><br/>
+					<span style="color:gray">
+						<sup>required</sup>
+					</span>
+				</td>
+				<td style="vertical-align: top;">Long</td>
+				<td style="vertical-align: top;">identifies the official</td>
+			</tr>
+		</table>
+		<h3 id="ExampleRequest5">Example Request</h3>
+		<p>
+			<strong>GET</strong> {{ api_url }}/officials/1
+		</p>
+		<h3 id="ExampleResponse12">Example Response</h3>
+		<pre><code>{
+    "id": 1,
+    "office_type": "primary",
+    "job_title": "Board of Registrars",
+    "title": "The Honorable",
+    "suffix": "",
+    "first_name": "New Voter Registrations",
+    "initial": "",
+    "last_name": "",
+    "email": "ovf-anonymized@test.com",
+    "phone": "(334) 358-6740",
+    "fax": "(334) 364-4822",
+    "office_uri": "{{ api_suffix }}/offices/487",
+    "resource_uri": "{{ api_suffix }}/officials/1"
+}
+</code></pre>
+	</body>
+</html>

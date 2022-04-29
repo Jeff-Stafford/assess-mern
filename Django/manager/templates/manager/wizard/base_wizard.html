@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load bootstrap3 i18n staticfiles compress breadcrumbs %}
+
+{% block head %}
+  {{ block.super }}
+  {{ form.media.css }}
+{% endblock %}
+
+{% block body_class %}wizard {% block body_sub_class %}{% endblock %}{% endblock %}
+
+{% block content %}
+    {% block wizard_content %}
+    <div class="container">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="{% if wizard.steps.current == 'location' %}active{% endif %}">
+            <a href="{% url 'manager:election_manager_step' step='location' %}" role="tab"> 1. Location &amp; Contact</a>
+          </li>
+          <li class="{% if wizard.steps.current == 'dates'%}active{% endif %}">
+            <a href="{% url 'manager:election_manager_step' step='dates' %}" role="tab">2. Dates &amp; Deadlines</a>
+          </li>
+          <li class="{% if wizard.steps.current == 'additional'%}active{% endif %}">
+            <a href="{% url 'manager:election_manager_step' step='additional' %}" role="tab">3. Additional Information (Optional)</a>
+          </li>
+        </ul>
+        <!-- /Nav tabs -->
+
+        <!-- Messages -->
+        {% bootstrap_messages %}
+        <!-- /Messages -->
+
+        <!-- Wizard Page -->
+        {% block wizard_page%}
+        {% endblock wizard_page %}
+        <!-- /Wizard Page -->
+    </div>
+    {% endblock wizard_content %}
+{% endblock content %}

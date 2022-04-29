@@ -1,0 +1,78 @@
+{% load crispy_forms_tags %}
+
+<!-- empty officer formset -->
+<script type="text/html" id="officer-template">
+  {%if admin_user %}
+  <li class="officer-form col-sm-12" data-object="wrapper" data-id="__prefix__">
+    <div class="node">
+      <div class="officer-form col-sm-12" data-object="id_officer-__prefix__" data-id="__prefix__">
+        <h3>
+          Contact __count__
+          {{ officer_formset.empty_form.DELETE.as_hidden }}
+          <button type="button" class="btn btn-icon btn-md pull-right" data-object="remove-entity" title="Remove" data-id="__prefix__">
+            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="officer-form-instance">
+          <input type="hidden" name="officer-__prefix__-nonpersistedid" value="nid-__prefix__" />
+          <input type="hidden" name="id" value="nid-__prefix__" />
+          {% crispy officer_formset.empty_form officer_formset_helper %}
+        </div>
+      </div>
+    </div>
+  </li>
+  {% else %}
+  <div class="officer-form col-sm-12" data-object="wrapper" data-id="__prefix__">
+    <div class="node">
+      <div class="officer-form col-sm-12" data-object="id_officer-__prefix__" data-id="__prefix__">
+        <h3>
+          Contact __count__
+          {{ officer_formset.empty_form.DELETE.as_hidden }}
+          <button type="button" class="btn btn-icon btn-md pull-right" data-object="remove-entity" title="Remove" data-id="__prefix__">
+            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="officer-form-instance">
+          <input type="hidden" name="officer-__prefix__-nonpersistedid" value="nid-__prefix__" />
+          <input type="hidden" name="id" value="nid-__prefix__" />
+          {% crispy officer_formset.empty_form officer_formset_helper %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</script>
+<!-- /empty officer formset -->
+
+{{ officer_formset.management_form }}
+
+{% if admin_user %}
+<ul class="dragable">
+{% else %}
+<ul class="nondragable">
+{% endif %}
+{% for f in officer_formset %}
+<li data-object="wrapper" class="address-form col-xs-12">
+    <h3>
+      Contact {{forloop.counter}}
+      <div class="pull-right">
+        {% if admin_user and f.instance.pk %}
+      <button type="button" class="btn btn-icon btn-md" title="Send Snapshot to Officer"
+              data-confirm="Please make sure you have saved all the modifications to this page by pressing 'Update' button below before sending a Snapshot. Send Snapshot now?"
+              data-ok-action="send-snapshot-to-officer" data-ok-action-url="{% url 'eod:local_official_officer_snapshot' officer_id=f.instance.pk local_official_id=local_official.pk %}">
+        <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+      </button>
+      {% endif %}
+       {{ f.DELETE.as_hidden }}
+      <button type="button" class="btn btn-icon btn-md" data-object="remove-entity" title="Remove this Contact">
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+      </button>
+
+    </div>
+    </h3>
+    <div class="officer-form-instance">
+      {% crispy f officer_formset_helper %}
+    </div>
+</li>
+{% endfor %}
+</ul>

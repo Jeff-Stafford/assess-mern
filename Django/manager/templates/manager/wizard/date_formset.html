@@ -1,0 +1,23 @@
+{% load bootstrap bootstrap3 %}
+<!-- formset -->
+<div class="col-xs-12" data-formset-form >
+        <div class="well row cloneArea">
+            <div class="col-xs-4">
+                {{ form.date|bootstrap:"form-group=col-xs-4"}}
+            </div>
+            <div class="col-xs-3">
+                {{ form.time|bootstrap:"form-group=col-xs-3"}}
+            </div>
+            <div class="col-xs-3">
+                {{ form.description|bootstrap:"form-group=col-xs-3"}}
+            </div>
+            <div class="col-xs-2 noLabel actions">
+                {% if form.DELETE %}
+                    {{ form.DELETE }}
+                    <div style="display: none;" class="btn btn-default delete-row" href="#" role="button" xdata-formset-delete-button><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove </div>
+                {% endif %}
+                <div style="display: inline-block;" class="btn btn-default add-row" href="#" role="button" xdata-formset-add><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add </div>
+            </div>
+        </div>
+</div>
+<!-- /formset -->

@@ -1,0 +1,170 @@
+{% extends 'admin_base.html' %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs %}
+{% block css %}
+<link rel='stylesheet' type='text/css' media='screen' href='{% static 'css/election-manager.css' %}' />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block admin_header %}
+    <h2 class='page-header'>Elections Results</h2>
+
+    <div class='row col-lg-12 toolbar-panel'>
+        {% include '_search_form.html' with form=search_form items=elections placeholder='Search for Elections by Title or State' %}
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+    <table class='elections-results-container col-lg-12 table'>
+        <caption><!-- Optional table caption. --></caption>
+        <thead>
+            <tr>
+                <th>
+                    <input type='checkbox' id='select_all_elections'/>
+                </th>
+                <th class='nowrapword'>Election</th>
+                <th class='nowrapword'>State</th>
+                <th>Election Date</th>
+                <th class='nowrapword'>Total Files</th>
+                <th>Recent uploaded</th>
+                <th>
+                    {% if perms.manager.add_electionresultdownloadhistory %}
+                    <i class="download-multiple-election-results download-election-results fa fa-download hidden"
+                        aria-hidden="true"
+                        data-election-id=''>
+                    </i>
+                    <a class='cloud-download-election-results fa fa-cloud-download hidden' href='#'> Download</a>
+                    {% endif %}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class='election-action election-select-all hidden'>
+                <td colspan='7'>
+                    All <span class='election-number elections-per-page'>50</span> elections on this page are selected. <span class='election-select-all-action'>Select all <span class='election-number total-elections'>108</span> elections</span>.
+                </td>
+            </tr>
+            <tr class='election-action election-deselect-all hidden'>
+                <td colspan='7'>
+                    All <span class='election-number total-elections'>108</span> elections are selected. <span class='election-deselect-all-action'>Clear selection</span>.
+                </td>
+            </tr>
+
+            {% for e in elections %}
+            <tr>
+                <th scope='row'>
+                    <input type='checkbox' class='select_single_selection' data-election-id='{{ e.election.id }}'/>
+                </th>
+                <td>
+                    <a class='regiontextdots' href='{% url 'manager:election_update' e.election.id %}'>
+                    {{ e.election.title }}
+                    </a>
+                </td>
+                <td>{{ e.election.get_election_state }}</td>
+                <td>{{ e.election.election_date }}</td>
+                <td>{{ e.total_result_files }}</td>
+                <td>{{ e.results.0.created_at }}</td>
+                <td>
+                    <i class="download-election-results fa fa-download"
+                        aria-hidden="true"
+                        data-election-id='{{ e.election.id }}'>
+                    </i>
+                    {% if perms.manager.add_electionresultdownloadhistory %}
+                    <a class='cloud-download-election-results fa fa-cloud-download hidden' href='#'> Download</a>
+                    {% endif %}
+                    {% if perms.manager.view_electionresult %}
+                    <i title='Show election results' class='show-details fa fa-plus'></i>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if perms.manager.view_electionresult %}
+            <tr class='election-details hidden'>
+                <td></td>
+                <td colspan='6' class='election-results'>
+                    <div>
+                        <h4>Results</h4>
+                        {% for r in e.results %}
+                        <table border='0' class='table-election-results table-condensed'>
+                            <tr>
+                                <td class='uploader'>
+                                    <dl class="dl-horizontal">
+                                        <dt><div class='result-number'>{{ forloop.counter }}</div> Uploaded</dt>
+                                        <dd>{{ r.created_at }}</dd>
+                                        {% if r.upload_by_user %}
+                                            <dt>User</dt>
+                                            <dd>{{ r.upload_by_user }}</dd>
+                                        {% endif %}
+                                        {% if r.uploader_name %}
+                                        <dt>Name</dt>
+                                        <dd>{{ r.uploader_name }}</dd>
+                                        {% endif %}
+                                        {% if r.uploader_phone %}
+                                        <dt>Phone</dt>
+                                        <dd>{{ r.uploader_phone }}</dd>
+                                        {% endif %}
+                                        {% if r.uploader_email %}
+                                        <dt>Email</dt>
+                                        <dd>{{ r.uploader_email }}</dd>
+                                        {% endif %}
+                                        <dt>Files</dt>
+                                        <dd>
+                                            <table class='attachments' border='0'>
+                                                <tbody>
+                                                    {% for attachment in r.attachments.all %}
+                                                    <tr>
+                                                        <td><a class='longfilenamedots' download target="_blank" title='{{ attachment.original_filename}}' href='{% url 'manager:election_results_download_link'  attachment.id %}'>{{ attachment.original_filename}}</a></td>
+                                                        <td>{{ attachment.notes }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </dd>
+                                    </dl>
+                                </td>
+                            </tr>
+                            {% if r.notes %}
+                            <tr class='notes'>
+                                <td colspan="2">
+                                    <dl class="dl-horizontal">
+                                        <dt>Notes</dt>
+                                        <dd>{{ r.notes }}</dd>
+                                    </dl>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+
+            {% empty %}
+            <tr>
+                <td colspan='5'>No records.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% include 'paginator.html' with items=elections %}
+
+{% endblock %}
+
+
+{% block tail_uncompressed_js %}
+<script type="text/javascript">
+    var all_elections_ids = ['{{ elections_ids|join:'\',\''}}']
+    var page_elections_ids = ['{{ page_elections_ids|join:'\',\'' }}']
+    var total_elections = all_elections_ids.length
+    var elections_per_page = page_elections_ids.length
+    var selected_elections_ids = {}
+    var ajax_generate_download_link_for_elections = "{% url 'manager:ajax_generate_download_link_for_elections' %}"
+    var ajax_check_download_link = "{% url 'manager:ajax_check_download_link' 999999999 %}"
+</script>
+<script src="{% static 'js/lib/lodash.min.js' %}"></script>
+<script src="{% static 'js/elections_results.js' %}"></script>
+{% endblock %}

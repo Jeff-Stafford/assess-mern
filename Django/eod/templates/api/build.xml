@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<project default="generate" basedir=".">
+	<property name="wikitext.standalone" value="jars" />
+	<path id="wikitext.classpath">
+		<fileset dir="${wikitext.standalone}">
+			<include name="org.eclipse.mylyn.wikitext.*core*.jar" />
+		</fileset>
+	</path>
+
+	<taskdef classpathref="wikitext.classpath" resource="org/eclipse/mylyn/wikitext/core/util/anttask/tasks.properties" />
+
+	<echo message="pulling in property files"/>
+	<property file="ant.properties"/>
+
+	<echo message="generate html documentation"/>
+	<target name="generate-html" description="Generate HTML from textile source">
+		<wikitext-to-html markupLanguage="Textile" xhtmlStrict="true" formatOutput="true">
+			<fileset dir="${basedir}">
+				<include name="*.textile"/>
+			</fileset>
+			<stylesheet url="/static/api/bootstrap.css"/>
+		</wikitext-to-html>
+	</target>
+
+	<target name="generate" description="Generate Documentation" depends="generate-html">
+		<zip destfile="EOD-API.zip"
+			basedir="."
+			includes="img/* styles/*.css EOD-API.html"
+		/>
+
+	</target>
+</project>

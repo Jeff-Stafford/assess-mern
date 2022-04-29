@@ -1,0 +1,59 @@
+<div class='col-xs-12'>
+    <table border='0' class='table table-responsive election-list-view'>
+        <thead>
+        <tr>
+            <th title='Election Status'>Status</th>
+            <th>Name</th>
+            <th>State</th>
+            <th>Location</th>
+            <th>Level</th>
+            <th>Type</th>
+            <th>Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for election in elections %}
+        <tr>
+            <td>{% include "manager/dashboard/_election_status.html" with election=election %}</td>
+            <td colspan='5'>
+            {% if perms.manager.change_election %}
+                <strong><a href="{% url 'manager:election_update' election_id=election.pk %}">{{ election.title }}</a></strong>
+            {% else %}
+                <strong>{{ election.title }}</strong>
+            {% endif %}
+            </td>
+            <td>
+            {% if perms.manager.send_request_election %}
+                <!-- <a class="btn btn-default btn-xs pull-right" href="{% url 'manager:election_send_request_for_results' election_id=election.pk %}" role="button">Request Results</a> -->
+            {% endif %}
+            </td>
+        </tr>
+        <tr class='election-list-row'>
+            <td></td>
+            <td></td>
+            <td style='width: 20%'>{{ election.get_election_state.name|default_if_none:"N/A" }}</td>
+            <td>
+                <ul>
+                {% for loc in election.locations.all|dictsort:"name" %}
+                  <li class="location">{{ loc.name }}</li>
+                {% endfor %}
+                </ul>
+            </td>
+            <td style='width: 20%'>{{ election.election_level }}</td>
+            <td>{{ election.election_type }}</td>
+            <td style='width: 18%'>{{ election.election_date|date:'N j, Y' }}
+                {% if election.election_day_registration_is_available %}
+                <i class="fa fa-info-circle" aria-hidden="true" title="Election day registration is available"></i>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan='7'><p>No results.</p></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% include 'paginator.html' with items=elections %}
+</div>

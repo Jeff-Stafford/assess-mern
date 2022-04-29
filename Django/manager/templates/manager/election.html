@@ -1,0 +1,382 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags %}
+{% block css %}
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+
+{% block admin_header %}
+    {% url 'manager:election_update' election_id as election_update_url %}
+    {% url 'manager:election_results' election_id as election_results_url %}
+    {% url 'manager:election_download_history' election_id as election_download_history_url %}
+
+    {% if perms.manager.view_election %}
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="{% if request.path == election_update_url %}active{% endif %}"><a href="{{ election_update_url }}">General Information</a></li>
+      {% if perms.manager.view_electionresult %}
+      <li role="presentation" class="{% if request.path == election_results_url %}active{% endif %}"><a href="{{ election_results_url }}">Results</a></li>
+      {% endif %}
+      {% if perms.manager.view_electionresultdownloadhistory %}
+      <li role="presentation" class="{% if request.path == election_download_history_url %}active{% endif %}"><a href="{{ election_download_history_url }}">Download History</a></li>
+      {% endif %}
+    </ul>
+    {% endif %}
+
+    <!-- <h2>{% if form.instance.id %}Update{% else %}Create{% endif %} Election</h2> -->
+{% endblock %}
+
+{% block admin_content %}
+  <!-- dashboard -->
+  <div class="container">
+    {{ block.super }}
+    <form class="election-form row" autocomplete="off" role="form" method="POST">
+      <div class="row">
+        <div class="col-lg-12">
+          <h2 class="page-header"><small>Elections</small><br/>
+          {% if election %}{{ election.title }}{% else %}New Election{% endif %}</h2>
+          {{ feedback.management_form }}
+          {{ urls.management_form }}
+          {% csrf_token %}
+          {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+          {% endfor %}
+          <div class="row">
+            <input type='hidden' id='version' value='0' />
+            <div class="col-lg-12">
+              {{ form.title|bootstrap:"form_group=col-lg-12" }}
+            </div>
+
+            <div class="col-lg-12">
+              <div class="col-lg-12">
+                <h4 class="col-lg-12 pull-left">Locations</h4>
+                <table class="table table-responsive">
+                  <thead>
+                    <tr>
+                      <th class="col-lg-1">#</th>
+                      <th class="col-lg-2">Geo ID</th>
+                      <th class="col-lg-4">Name</th>
+                    </tr>
+                  </thead>
+                  <tbody data-formset-body="">
+                    {% for location in locations %}
+                    <tr data-formset-empty-form="" style="display: table-row;">
+                      <td>{{forloop.counter}}</td>
+                      <td>{{location.geoid}}</td>
+                      <td>{{location.name}}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <br />
+              </div>
+            </div>
+
+
+            <div class="col-lg-12">
+              {{ form.election_date|bootstrap:"form_group=col-lg-4" }}
+              {{ form.election_level|bootstrap:"form_group=col-lg-4" }}
+              {{ form.election_type|bootstrap:"form_group=col-lg-4" }}
+              {{ form.election_day_registration_is_available|bootstrap:"form_group=col-lg-12" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ domestic_reg_dates.prefix }}">
+          <h3 class="col-lg-12 pull-left">Domestic Deadlines</h3>
+          <h4 class="col-lg-12">Domestic Registration Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_dates_table.html" with formset=domestic_reg_dates only %}
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ domestic_req_dates.prefix }}">
+          <h4 class="col-lg-12">Domestic Request Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_dates_table.html" with formset=domestic_req_dates only %}
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ domestic_sub_dates.prefix }}">
+          <h4 class="col-lg-12">Domestic Return Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_dates_table.html" with formset=domestic_sub_dates only %}
+        </div>
+        <!-- /Domestic Deadlines -->
+
+        <!-- Overseas Deadlines -->
+        <div class="col-lg-12" data-formset-prefix="{{ overseas_reg_dates.prefix }}">
+          <h3 class="col-lg-12 pull-left">Overseas Deadlines</h3>
+          <h4 class="col-lg-12">Overseas Registration Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_dates_table.html" with formset=overseas_reg_dates only %}
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ overseas_req_dates.prefix }}">
+          <h4 class="col-lg-12">Overseas Request Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_dates_table.html" with formset=overseas_req_dates only %}
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ overseas_sub_dates.prefix }}">
+          <h4 class="col-lg-12">Overseas Return Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_dates_table.html" with formset=overseas_sub_dates only %}
+        </div>
+        <!-- /Overseas Deadlines -->
+
+        <!-- Military Deadlines -->
+        <div class="col-lg-12">
+          <h3 class="col-lg-12 xpull-left">Military Deadlines</h3>
+          {{ form.use_overseas_dates_as_military_dates|bootstrap:"form_group=col-lg-12" }}
+        </div>
+        <div class="military-body">
+          <div class="col-lg-12" data-formset-prefix="{{ military_reg_dates.prefix }}">
+            <h4 class="col-lg-12">Military Registration Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+            {% include "manager/election_dates_table.html" with formset=military_reg_dates only %}
+          </div>
+
+          <div class="col-lg-12" data-formset-prefix="{{ military_req_dates.prefix }}">
+            <h4 class="col-lg-12">Military Request Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+            {% include "manager/election_dates_table.html" with formset=military_req_dates only %}
+          </div>
+
+          <div class="col-lg-12" data-formset-prefix="{{ military_sub_dates.prefix }}">
+            <h4 class="col-lg-12">Military Return Deadlines <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+            {% include "manager/election_dates_table.html" with formset=military_sub_dates only %}
+          </div>
+          <!-- /Military Deadlines -->
+        </div>
+
+        <!-- Early voting -->
+        <div class="col-lg-12" data-formset-prefix="{{ early_voting_from.prefix }}">
+          <h3 class="col-lg-12 pull-left">Early Voting</h3>
+          <h4 class="col-lg-12">Early Voting From <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_single_date.html" with formset=early_voting_from only %}
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ early_voting_to.prefix }}">
+          <h4 class="col-lg-12">Early Voting To <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_single_date.html" with formset=early_voting_to only %}
+        </div>
+        <!-- /Early voting -->
+
+        <!-- In-Person Absentee -->
+        <div class="col-lg-12" data-formset-prefix="{{ in_person_absentee_voting_from.prefix }}">
+          <h3 class="col-lg-12 pull-left">In-Person Absentee Voting</h3>
+          <h4 class="col-lg-12">In-Person Absentee Voting From <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_single_date.html" with formset=in_person_absentee_voting_from only %}
+        </div>
+
+        <div class="col-lg-12" data-formset-prefix="{{ in_person_absentee_voting_to.prefix }}">
+          <h4 class="col-lg-12">In-Person Absentee Voting To <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Date</button></h4>
+          {% include "manager/election_single_date.html" with formset=in_person_absentee_voting_to only %}
+        </div>
+        <!-- /In-Person Absentee -->
+
+        <div class="col-lg-12" data-formset-prefix="{{ urls.prefix }}">
+          <h3 class="col-lg-12">Links <button class="btn btn-success btn-xs pull-right add-row" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add URL</button></h4>
+
+          <div class="row form-group">
+              {% if urls.non_field_errors %}
+              <div class="alert alert-danger">
+                  <a class="close" data-dismiss="alert">&times;</a>
+                  {% for non_field_error in urls.non_field_errors %}
+                       {{ non_field_error }}
+                  {% endfor %}
+              </div>
+              {% endif %}
+
+              <div id="{{ formset_id }}" class="col-xs-12">
+                  {{ urls.management_form }}
+                  <!-- exists formset -->
+                  <div class="row url-row" data-formset-body>
+                  {% for form in urls %}
+                  {% include "manager/election_url_formset.html" with form=form row_idx=forloop.counter0 only %}
+                  {% endfor %}
+                  </div>
+                  <!-- /exists formset -->
+
+                  <script type="form-template" data-formset-empty-form>
+                  {% escapescript %}
+                  {% include "manager/election_url_formset.html" with form=urls.empty_form only %}
+                  {% endescapescript %}
+                  </script>
+              </div>
+          </div>
+        </div>
+
+
+        <div class="col-lg-12">
+          {{ form.use_default_elections_website|bootstrap:"form_group=col-lg-12" }}
+        </div>
+
+        <div class="col-lg-12 default_contact_email">
+          {{ form.use_user_email_as_contact_email|bootstrap:"form_group=col-lg-12" }}
+          {{ form.contact_email|bootstrap:"form_group=col-lg-12" }}
+        </div>
+
+        <div class="col-lg-12">
+          {{ form.additional_information|bootstrap:"form_group=col-lg-12" }}
+        </div>
+
+        <div class="col-lg-12">
+          <h3 class="col-lg-12">Feedback</h3>
+
+          {% if feedback.non_field_errors %}
+          <div class="alert alert-danger">
+              <a class="close" data-dismiss="alert">&times;</a>
+              {% for non_field_error in feedback.non_field_errors %}
+                   {{ non_field_error }}
+              {% endfor %}
+          </div>
+          {% endif %}
+
+          {% for form in feedback %}
+          {% include "manager/election_feedback.html" with form=form %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-lg-12 election-buttons">
+        {% if form.instance.id %}
+          {% if perms.manager.change_election %}
+          <button type='submit' class='pull-right btn btn-success'>Update</button>
+          {% endif %}
+        {% else %}
+          {% if perms.manager.add_election %}
+          <button type='submit' class='pull-right btn btn-success'>Create</button>
+          {% endif %}
+        {% endif %}
+
+        {% if form.instance.id %}
+          {% if perms.manager.delete_election %}
+          <button type='submit' name='delete' value='delete' class='pull-right btn btn-default btn-normal' data-dismiss='modal' onclick="return confirm('Are you sure you want to delete this election and all related records?');">Delete</button>
+          {% endif %}
+        {% endif %}
+      </div>
+    </form>
+  </div>
+  <!-- /dashboard -->
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+<script src="{% static 'js/jquery.formset.js' %}"></script>
+<script src="{% static 'js/election_utils.js' %}"></script>
+<script type="text/javascript">
+    $(function() {
+
+        var formPrefixes = [
+            "{{ domestic_reg_dates.prefix }}",
+            "{{ domestic_req_dates.prefix }}",
+            "{{ domestic_sub_dates.prefix }}",
+            "{{ overseas_reg_dates.prefix }}",
+            "{{ overseas_req_dates.prefix }}",
+            "{{ overseas_sub_dates.prefix }}",
+            "{{ military_reg_dates.prefix }}",
+            "{{ military_req_dates.prefix }}",
+            "{{ military_sub_dates.prefix }}",
+            "{{ early_voting_from.prefix }}",
+            "{{ early_voting_to.prefix }}",
+            "{{ in_person_absentee_voting_from.prefix }}",
+            "{{ in_person_absentee_voting_to.prefix }}",
+            "{{ urls.prefix }}",
+        ]
+
+        function updateEmptyRow(formset) {
+            if (formset.activeFormCount() > 0) {
+                formset.$formset.find('tr[data-formset-empty-form]').hide()
+            } else {
+                formset.$formset.find('tr[data-formset-empty-form]').show()
+            }
+        }
+
+        function updateDateExample($form) {
+            var requestId = $form.attr('id'),
+                dateTypeId = $form.find('.date-type select').val() || $form.find('.date-type').val(),
+                date = $form.find('.date input').val(),
+                time = $form.find('.time input').val(),
+                tz = $form.find('.time-zone select').val();
+
+
+            $form.find(".date-example span").hide()
+            $form.find(".date-example span.glyphicon-refresh").show()
+            $.get({
+              'url': '{% url "api:ajax_date_type_render" %}',
+              'dataType': 'json'
+            },
+            {
+              'req_id': requestId,
+              'id': dateTypeId,
+              'date': date,
+              'time': time,
+              'tz': tz
+            }).done(function(data) {
+                $form.find(".date-example span.example").text(data.date)
+                $form.find(".date-example span.example").show()
+            }).fail(function(data) {
+                $form.find(".date-example span.glyphicon-refresh").hide()
+                $form.find(".date-example span.error").text(data.responseJSON && data.responseJSON.error || "Error")
+                $form.find(".date-example span.error").show()
+            }).always(function() {
+                $form.find(".date-example span.glyphicon-refresh").hide()
+            })
+        }
+
+        function bindDateExample(form) {
+            var $form = $(form);
+            var $elements = $form.find('.date-type select, .date input, .time input, .time-zone select')
+            if ($elements.length > 0) {
+              $elements.bind('change', function() {
+                  updateDateExample($form);
+              })
+              updateDateExample($form)
+            }
+        }
+
+        for (var i = 0; i < formPrefixes.length; i++) {
+            var cssSelector = "div[data-formset-prefix='" + formPrefixes[i] + "']";
+            (function(cssSelector) {
+                $(cssSelector).formset({
+                    //animateForms: true
+                    add: ".add-row",
+                    deleteButton: ".delete-row"
+                });
+                var formset = $(cssSelector).formset('getOrCreate')
+                updateEmptyRow(formset)
+
+                $(cssSelector).on('formAdded', function(e) {
+                    var newForm = e.target
+                    var formset = $(cssSelector).formset('getOrCreate')
+                    updateEmptyRow(formset)
+                    bindDateExample(newForm)
+                })
+
+                $(cssSelector).on('formDeleted', function(e) {
+                    var newForm = e.target;
+                    var formset = $(cssSelector).formset('getOrCreate')
+                    updateEmptyRow(formset)
+                })
+
+            })(cssSelector);
+        }
+
+        function updateMilitaryDates() {
+            var $checkbox = $('#{{ form.use_overseas_dates_as_military_dates.auto_id }}')
+            if ($checkbox.prop('checked')) {
+                $('.military-body').hide()
+            } else {
+                $('.military-body').show()
+            }
+        }
+
+        // miltary dates
+        $('#{{ form.use_overseas_dates_as_military_dates.auto_id }}').change(function() {
+            updateMilitaryDates()
+        })
+
+        updateMilitaryDates()
+    })
+</script>
+
+<script type="text/javascript">
+    init_field('.default_contact_email', "#id_contact_email ~ span input,#id_contact_email")
+</script>
+
+{% endblock tail_uncompressed_js %}

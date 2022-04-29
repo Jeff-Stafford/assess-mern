@@ -1,0 +1,85 @@
+{% load compress staticfiles %}
+<div class='col-lg-12'>
+
+  <div class="panel panel-default election">
+    <div class="panel-heading">
+      <h4 class="electionName">
+        {% include "manager/dashboard/_election_status.html" with election=election %}&nbsp;{{ election.title|title }}
+        <small><a href='{% url 'manager:election_show' public_election_id=election.get_public_election_id %}'>Public URL</a></small>
+      </h4>
+    </div>
+
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="pull-right">
+          {% if perms.manager.change_election %}
+            <a class="btn btn-primary btn-xs" href="{% url 'manager:election_update' election_id=election.pk %}" role="button">Edit</a>
+          {% endif %}
+         
+          {% if perms.manager.send_request_election %}
+            <!-- <a class="btn btn-primary btn-xs" href="{% url 'manager:election_send_request_for_results' election_id=election.pk %}" role="button">Request Results</a> -->
+          {% endif %}
+        </div>
+          <h4>{{ election.election_level }}</h4>
+          <h4>{{ election.election_type }}</h4>
+        </div>
+
+        <div class="col-xs-12">
+          <dl class="pull-left dl-horizontal">
+            <dt>Date:</dt>
+            <dd>{{ election.election_date|date:'N j, Y' }} {% if election.election_day_registration_is_available %}<span class="small">(Election day registration is available)</span>{% endif %}</dd>
+
+            <dt>State:</dt>
+            <dd>{{ election.get_election_state.name|default_if_none:"N/A" }}</dd>
+
+            {% if election.locations.all.count > 1 %}
+              <dt>Locations:</dt>
+              <dd class='locations'>
+              <ul>
+                {% for loc in election.locations.all|dictsort:"name" %}
+                  <li class="location">{{ loc.name }}</li>
+                {% endfor %}
+              </ul>
+              </dd>
+            {% else %}
+              <dt>Location:</dt>
+              <dd class='locations'>
+              {% for loc in election.locations.all|dictsort:"name" %}
+                {{ loc.name }}
+              {% endfor %}
+              </dd>
+            {% endif %}
+            <dt>Submitted By:</dt>
+            <dd>{{ election.user }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      {% if perms.manager.view_electiondate %}
+      <div class="details-container row">
+        <div class="col-xs-12">
+          <h4>Dates &amp; Deadlines <a class="view-details xpull-right" data-toggle="collapse" href="#collapseDates{{ election.id }}" aria-expanded="false" aria-controls="collapseDates">View Details</a>
+          </h4>
+
+          <div class="collapse" id="collapseDates{{ election.id }}">
+            <div class="election-dates">
+              {% regroup election.dates.all by kind as dates_list %}
+              {% include "manager/dashboard/election_view_dates_group.html" with title="Domestic Deadlines" title_reg="Domestic Registration Deadlines" title_req="Domestic Request Deadlines" title_sub="Domestic Return Deadlines" date_type_reg="DRD" date_type_req="DBRD" date_type_sub="DBED" dates_list=dates_list %}
+              {% include "manager/dashboard/election_view_dates_group.html" with title="Overseas Deadlines" title_reg="Overseas Registration Deadlines" title_req="Overseas Request Deadlines" title_sub="Overseas Return Deadlines" date_type_reg="ORD" date_type_req="OBRD" date_type_sub="OBED" dates_list=dates_list %}
+              {% include "manager/dashboard/election_view_dates_group.html" with title="Military Deadlines" title_reg="Military Registration Deadlines" title_req="Military Request Deadlines" title_sub="Military Return Deadlines" date_type_reg="MRD" date_type_req="MBRD" date_type_sub="MBED" dates_list=dates_list %}
+
+              <h4>Additional Dates</h4>
+              {% include "manager/dashboard/election_view_dates_group.html" with title="Early Voting" title_reg="Early Voting From" title_req="Early Voting To" title_sub="" date_type_reg="EVF" date_type_req="EVT" date_type_sub="" dates_list=dates_list %}
+              {% include "manager/dashboard/election_view_dates_group.html" with title="In-Person" title_reg="In-Person Absentee Voting From" title_req="In-Person Absentee Voting To" title_sub="" date_type_reg="AVF" date_type_req="AVT" date_type_sub="" dates_list=dates_list %}
+
+              <h4>Additional information</h4>
+              {% if election.additional_information %}{{ election.additional_information }}{% else %}N/A{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

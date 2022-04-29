@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load compress staticfiles %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+      <div class="col-xs-12 confirmation">
+        <h2>Your Elections</h2>
+        <div class="alert alert-success text-center" role="alert">
+          <h4><span class="glyphicon glyphicon-ok"></span> Your election has been added and is pending approval by our staff</h4>
+        </div>
+        <div class="row">
+          <div class="col-xs-10 col-xs-offset-1">
+            <p>An email has been sent to the address you provided with a link you can use to confirm &amp; edit your election.</p>
+            <p>You can also use this email to create an account which can be used to manage your elections.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-10 col-xs-offset-1">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-xs-1 col-xs-offset-1">
+                    <img src="{% static 'images/calendar-icon.png' %}" class="img-responsive pull-left election-added">
+                  </div>
+                  <div class="col-xs-10">
+                    <span class="glyphicon glyphicon-remove pull-right" title="Remove this election"></span>
+                    <h3 id="electionName"> {{ election.title }}</h3>
+                    <p><strong>Election Date:</strong> <span id="electionDate">{{ election.election_date|date:'N j, Y' }}</span></p>
+                    <p><strong>Status:</strong> Pending Approval</p>
+                    <a class="btn btn-default pull-right" href="{% url 'manager:election_update' election.id %}" role="button">Edit</a>
+                  </div>
+                </div>
+                <div class="row" style="border-top: 1px solid #e5e5e5; padding-top:12px; margin-top:12px;">
+                  <div class="col-xs-12 text-center">
+                    <h4>Print &amp; Share this Election</h4>
+                  </div>
+                  <div class="col-xs-12">
+                    <!-- share block -->
+                    {% include "manager/social_networks.html" with election_short_url=election_short_url %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block tail_uncompressed_js %}
+{% include "manager/social_networks_js.html" %}
+{% endblock %}

@@ -1,0 +1,132 @@
+{% load compress staticfiles bootstrap formset_tags breadcrumbs crispy_forms_tags state_name %}
+
+<div class="panel-body">
+
+<h3>Officer {{forloop.counter}}: <span class="text-muted">{{data.2.operation }}</span>
+  {% if 'No Updates' in data.2.operation %}
+    <a class="btn btn-success btn-xs pull-right" role="button" data-object="see-more" data-toggle="collapse" href="#officer{{forloop.counter}}" aria-expanded="false" aria-controls="address{{forloop.counter}}">View Data</a>
+  {% endif %}
+</h3>
+
+<input type="hidden" name="officer-accept-{{forloop.counter}}-delete" value="{{delete}}" />
+<input type="hidden" name="officer-reject-{{forloop.counter}}-delete" value="" />
+
+<input type="hidden" name="officer-accept-{{forloop.counter}}-add" value="1" />
+<input type="hidden" name="officer-reject-{{forloop.counter}}-add" value="0" />
+
+<input type="hidden" name="officer-accept-{{forloop.counter}}-order_number" value="{{suggested.order_number}}" />
+<input type="hidden" name="officer-reject-{{forloop.counter}}-order_number" value="{{suggested.order_number}}" />
+
+<input type="hidden" name="officer-accept-{{forloop.counter}}-nonpersistedid" value="{{suggested.nonpersistedid}}" />
+
+<input type="hidden" name="officer-{{forloop.counter}}-id" value="{{current.id}}" />
+
+<div class="{% if 'No Updates' in data.2.operation %}collapse{% else %}collapse-in{% endif %}" id="officer{{forloop.counter}}">
+  <table class="table table-responsive table-condensed corrections-table {{ data.2.style_class }}">
+    <thead>
+      <tr>
+        <th></th>
+        <th class="text-center">Current Value</th>
+        <th> Correction</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">Job Title</label></th>
+        <td class="text-center">
+          <span class="hidden" data-object="current" data-value="{{current.office_name}}"></span>
+          <span>{{ current.office_name }}</span>
+          <input type="hidden" name="officer-reject-{{forloop.counter}}-office_name" value="{{ current.office_name }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.office_name}}"></span>
+          <input type="text" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 class="form-control {% if not suggested %} hidden {% endif %}" name="officer-accept-{{forloop.counter}}-office_name"
+                 value="{{ suggested.office_name }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label>First Name</label></th>
+        <td class="text-center">
+          <span class="hidden" data-object="current" data-value="{{current.first_name}}"></span>
+          <span>{{ current.first_name }}</span>
+          <input type="hidden" name="officer-reject-{{forloop.counter}}-first_name" value="{{ current.first_name }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.first_name}}"></span>
+          <input type="text" class="form-control {% if not suggested %} hidden {% endif %}" name="officer-accept-{{forloop.counter}}-first_name"
+                 value="{{ suggested.first_name }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label>Last Name</label></th>
+        <td class="text-center">
+          <span class="hidden" data-object="current" data-value="{{current.last_name}}"></span>
+          <span>{{ current.last_name }}</span>
+          <input type="hidden" name="officer-reject-{{forloop.counter}}-last_name" value="{{ current.last_name }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.last_name}}"></span>
+          <input type="text" class="form-control {% if not suggested %} hidden {% endif %}" name="officer-accept-{{forloop.counter}}-last_name"
+                 value="{{ suggested.last_name }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">Phone</label></th>
+        <td class="text-center">
+          <span class="hidden" data-object="current" data-value="{{current.phone}}"></span>
+          <span>{{ current.phone }}</span>
+          <input type="hidden" name="officer-reject-{{forloop.counter}}-phone" value="{{ current.phone }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.phone}}"></span>
+          <input type="text" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 class="form-control {% if not suggested %} hidden {% endif %}" name="officer-accept-{{forloop.counter}}-phone"
+                 pattern="^\(\d{3}\) \d{3}-\d{4}( x(\d{1,5}))?$"
+                 placeholder="(123) 132-1234 x123"
+                 value="{{ suggested.phone }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row">Fax</th>
+        <td class="text-center">
+          <span class="hidden" data-object="current" data-value="{{current.fax}}"></span>
+          <span>{{ current.fax }}</span>
+          <input type="hidden" name="officer-reject-{{forloop.counter}}-fax" value="{{ current.fax}}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.fax}}"></span>
+          <input class="form-control {% if not suggested %} hidden {% endif %}" type="text"
+                 pattern="^\(\d{3}\) \d{3}-\d{4}$"
+                 placeholder="(123) 132-1234"
+                 name="officer-accept-{{forloop.counter}}-fax" value="{{ suggested.fax }}" />
+        </td>
+      </tr>
+      <tr class="analyze-correction">
+        <th scope="row"><label class="requiredFieldMark">E-mail</label></th>
+        <td class="text-center">
+          <span class="hidden" data-object="current" data-value="{{current.email}}"></span>
+          <span>{{ current.email }}</span>
+          <input type="hidden" name="officer-reject-{{forloop.counter}}-email" value="{{ current.email }}" />
+        </td>
+        <td>
+          <span class="hidden" data-object="corrected" data-value="{{suggested.email}}"></span>
+          <input type="email" {% if 'Removed' not in data.2.operation %} required="required" {% endif %}
+                 class="form-control {% if not suggested %} hidden {% endif %}" name="officer-accept-{{forloop.counter}}-email" value="{{ suggested.email }}" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="panel-footer text-right operations {% if not forloop.last %}notlast{%else%}last{%endif%}">
+    <label class="radio-inline">
+      <input type="radio" name="officer-{{forloop.counter}}-action" value="reject" id="officer-{{forloop.counter}}-discard" {% if 'No Updates' in data.2.operation %}
+             checked="selected" {% else %} required="required"{%endif%} /> Do Not Update
+    </label>
+    <label class="radio-inline">
+    <input type="radio" {% if 'Removed' in data.2.operation %} data-action="officer-removal" data-officer-id="{{current.id}}" {% endif %} name="officer-{{forloop.counter}}-action" value="accept" id="officer-{{forloop.counter}}-accept" /> Update To Use Correction
+    </label>
+  </div>
+
+</div>
+</div>

@@ -1,0 +1,41 @@
+<div class="form-group">
+  <label class="control-label col-xs-4 requiredFieldMark">Primary Contact</label>
+  <div class="controls col-xs-5">
+    <select name="address-{{idx}}-primary_contact" class="select form-control" data-required="no" required="required">
+      <option value="">Please Select</option>
+      {% for contact in local_official_contacts %}
+      {% if contact.0 == address.primary_contact.pk %}
+      <option selected value="{{contact.0}}">{{contact.1}}</option>
+      {% else %}
+      <option value="{{contact.0}}">{{contact.1}}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-xs-1">
+    <a data-object="add-new-contact" data-target="{{idx}}" class="btn inline"
+       title="Additional Contact for this Address"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+  </div>
+</div>
+
+<div data-object="additional-contacts-pane" data-target="address-{{idx}}"></div>
+
+<script type="text/javascript">
+  (function() {
+
+    function addContactsToDOM(address_contacts, idx) {
+      $(address_contacts).each(function (index, contact) {
+        var tmplMarkup = $(`[data-object='address-primary-contact-template']`).html();
+        var compiledTmpl = tmplMarkup.replace(`value="${contact[0]}"`, `selected value="${contact[0]}"`);
+
+        compiledTmpl = compiledTmpl.replace("__prefix__", `${idx}`);
+        $(`div[data-target='address-${idx}']`).append(compiledTmpl);
+      });
+    }
+
+    setTimeout(function () {
+      addContactsToDOM({{address.contacts|safe}}, "{{idx}}");
+    }, 0);
+
+  })();
+</script>

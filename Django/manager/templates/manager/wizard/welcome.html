@@ -1,0 +1,113 @@
+{% extends "manager/wizard/base_wizard.html" %}
+{% load staticfiles i18n bootstrap %}
+
+{% block head %}
+    {{ block.super }}
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block body_sub_class %}home{% endblock %}
+
+{% block jumbotron %}
+{% if wizard.steps.first %}
+<div class="jumbotron">
+
+  {% if not request.GET.create %}
+  <h1>Do voters know about your next election?</h1>
+  {% else %}
+  <h1>Add New Election</h1>
+  {% endif %}
+
+  <div class="well">
+
+      {% if not request.GET.create %}
+      <p>Post and share your elections with more voters than ever!</p>
+      {% else %}
+      <p>Please select state and election level</p>
+      {% endif %}
+
+      <form class="form-horizontal" method="post">
+          {% csrf_token %}
+          {{ wizard.management_form }}
+          <div class="form-group">
+              {{ wizard.form.state|bootstrap_inline:"form_group=col-md-7,ignore_form_group=1" }}
+              {{ wizard.form.election_level|bootstrap_inline:"form_group=col-md-5,ignore_form_group=1" }}
+          </div>
+          <div class="form-group">
+              <div class="col-sm-12">
+                  {% if wizard.steps.next %}
+                  <button class="btn btn-success pull-right next" type="submit" name="xwizard_goto_step" value="{{ wizard.steps.next }}" role="button">Next</button>
+                  {% endif %}
+              </div>
+          </div>
+      </form>
+  </div>
+</div>
+{% endif %}
+{% endblock jumbotron %}
+
+{% block content %}
+{% if not request.GET.create %}
+<div class="container-full how-it-works">
+  <div class="container">
+    <a name="how-it-works"></a>
+    <h1>How it works</h1>
+    <div class="row">
+      <div class="col-xs-12"><img src="{% static 'images/calendar-icon.png' %}" class="img-responsive pull-left" style="max-width:128px;margin-right:25px; margin-top:10px;">
+        <section>
+          <h2>Add your election</h2>
+          <p class="lead">Add and manage your local, state, municipal, school and district elections</p>
+        </section>
+       </div>
+    </div>
+
+    <div class="row" style="margin:50px auto;">
+      <div class="col-xs-12"><img src="{% static 'images/cloud-icon.png' %}" class="img-responsive pull-right" style="max-width:200px;margin-left:25px; margin-top: 12px;">
+        <section>
+         <h2>Review and publish</h2>
+          <p class="lead">Your election is reviewed by our staff and published for distribution</p>
+        </section>
+       </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12"><img src="{% static 'images/share-icon.png' %}" class="img-responsive pull-left" style="max-width:120px;margin-right:25px; margin-top:22px;">
+        <section>
+          <h2>Reach More Voters</h2>
+          <p class="lead">Share your election information with voters; prepare a print version and distribute using our network of subcribers</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock content %}
+
+{% block unused_block_just_a_sample %}
+<p>Election Wizard :: Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
+<form action="" method="POST">
+{% csrf_token %}
+
+<table>
+{{ wizard.management_form }}
+{% if wizard.form.forms %}
+    FORMS
+    {{ wizard.form.management_form }}
+    {% for form in wizard.form.forms %}
+        {{ form }}
+    {% endfor %}
+{% else %}
+    FORMS
+    {{ wizard.form }}
+{% endif %}
+</table>
+{% if wizard.steps.prev %}
+<button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% trans "first step" %}</button>
+<button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
+{% endif %}
+
+<input type="submit" value="{% trans "submit" %}"/>
+
+</form>
+
+{% endblock %}

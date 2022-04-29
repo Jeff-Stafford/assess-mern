@@ -1,0 +1,234 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs crispy_forms_tags state_name %}
+
+  {% block body_class %}{{ block.super }}
+    {% if correction.status == 'CORRECTION_SUBMITTED_UPDATES' %}admin corrections{% endif %}
+  {% endblock %}
+
+
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/eod.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block admin_header %}
+
+    <h2 class="page-header">Corrections{% if correction.status == 'CORRECTION_SUBMITTED_UPDATES' %} <small>(Submitted)</small>{% endif %}</h2>
+
+    <h3>{{ correction.local_official.region.name }}, {{ correction.local_official.region.state.name }}
+    <a href='{% url 'eod:local-official-detail' state_id=correction.local_official.region.state.id pk=correction.local_official.pk %}' class="btn btn-success btn-xs" title='Edit {{ correction.local_official.region.name }}, {{ correction.local_official.region.state.name }}'>Edit</a>
+    {% if correction.status == 'CORRECTION_SUBMITTED_UPDATES' %}<a class="btn btn-success btn-xs" role="button" data-toggle="collapse" href="#History" aria-expanded="false" aria-controls="History">View History</a>{% endif %}
+    </h3>
+{% endblock %}
+
+{% block admin_content %}
+    <div class="row page-subheader">
+      <div class="col-xs-7">
+        {% if correction.status == 'CORRECTION_SUBMITTED_UPDATES' %}
+            <h4 class="">Corrections Are Ready for Review</h4>
+        {% elif correction.status == 'CORRECTION_ACCEPTED' %}
+            <h4 class="page-subheader text-success">Corrections Have Been Processed.</h4>
+        {% elif correction.status == 'CORRECTION_REJECTED' %}
+            <h4 class="page-subheader text-danger">Corrections Have Been Rejected.</h4>
+        {% endif %}
+      </div>
+      <div class="col-xs-5 text-muted">
+        <small>
+          <strong>Request Created:</strong>
+          {{ correction.created_at }}<br/>
+          <strong>Local Official Updated:</strong>
+          {{ correction.local_official.last_updated }}<br/>
+        </small>
+      </div>
+    </div>
+{% if correction.status == 'CORRECTION_SUBMITTED_UPDATES' %}
+<div class="collapse" id="History">
+{% else %}
+<div class="collapse in" id="History" aria-expanded="true">
+{% endif %}
+
+    <h3>History</h3>
+    <table class='table table-reponsive'>
+      <thead>
+        <tr>
+            <th class='nowrapword'>Date</th>
+            <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+            <th class='nowrapword'>{{ correction.updated_at }}</th>
+            <th>
+            {% include 'eod/human_status.html' with correction=correction %}
+            </th>
+        </tr>
+        {% for h in correction.correction_history.all|dictsortreversed:"created_at" %}
+        <tr>
+            <td class='nowrapword'>{{ h.created_at }}</td>
+            <td>
+            {% include 'eod/human_status.html' with correction=h %}
+            </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+
+    {% if local_official %}
+    <form method="POST" data-object="sync-deletion">
+
+    <div class="form-container">
+      <div class="panel panel-form">
+        <div class="panel-heading">
+          <h3>Officers</h3>
+        </div>
+        <input type="hidden" name="officers-count" value="{{ officers|length }}" />
+        {% for data in officers %}
+
+        {% if data.2.style_class == "record-removal" %}
+        {% include "eod/officer_block.html" with current=data.0 delete=data.2.removal %}
+        {% endif %}
+
+        {% if data.2.style_class == "record-addition" %}
+        {% include "eod/officer_block.html" with suggested=data.1 %}
+        {% endif %}
+
+        {% if data.2.style_class != "record-addition" and data.2.style_class != "record-removal" %}
+        <!-- as is -->
+        {% include "eod/officer_block.html" with current=data.1 suggested=data.0 %}
+        {% endif %}
+
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-container">
+    <div class="panel panel-form">
+      <div class="panel-heading">
+        <h3>Addresses</h3>
+      </div>
+      <input type="hidden" name="addresses-count" value="{{ addresses|length }}" />
+      {% for data in addresses %}
+
+      {% if data.2.style_class == "record-removal" %}
+      {% include "eod/address_block.html" with current=data.0 delete=data.2.removal addition=False %}
+      {% endif %}
+
+      {% if data.2.style_class == "record-addition" %}
+      {% include "eod/address_block.html" with suggested=data.1 addition=True %}
+      {% endif %}
+
+      {% if data.2.style_class != "record-addition" and data.2.style_class != "record-removal" %}
+      <!-- as is -->
+      {% include "eod/address_block.html" with current=data.1 suggested=data.0 %}
+      {% endif %}
+
+      {% endfor %}
+    </div>
+  </div>
+
+  {% for data in general_information %}
+  <div class="form-container">
+    <div class="panel panel-form">
+
+        <div class="panel-heading">
+          <h3>General Information: <span class="text-muted">{{data.2.operation}}</span>
+            {% if 'No Updates' in data.2.operation %}
+            <a class="btn btn-success btn-xs pull-right" role="button" data-toggle="collapse" href="#general-information"
+               aria-expanded="false" aria-controls="address{{forloop.counter}}">View Data</a>
+            {% endif %}
+          </h3>
+        </div>
+        <div class="panel-body {% if 'No Updates' in data.2.operation %}collapse{% else %}collapse-in{% endif %}" id="general-information"
+             style="padding-bottom:0;">
+          <table class="table table-responsive table-condensed corrections-table record-amendment">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Current Value</th>
+                <th width="45%">Correction</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="analyze-correction">
+                <th scope="row">Local Official Type</th>
+                <td>
+                  <span class="hidden" data-object="current" data-value="{{data.1.type}}"></span>
+                  <span>{{ data.1.type}}</span>
+                  <input type="hidden" name="general-reject-type" value="{{ data.1.type }}" />
+                </td>
+                <td>
+                  <span class="hidden" data-object="corrected" data-value="{{data.0.type}}"></span>
+                  <input type="text" class="form-control {% if not data.0 %} hidden {% endif %}" name="general-accept-type" value="{{ data.0.type }}" />
+                </td>
+              </tr>
+              <tr class="analyze-correction">
+                <th scope="row">Hours</th>
+                <td>
+                  <span class="hidden" data-object="current" data-value="{{data.1.hours}}"></span>
+                  <span>{{ data.1.hours}}</span>
+                  <input type="hidden" name="general-reject-hours" value="{{ data.1.hours }}" />
+                </td>
+                <td>
+                  <span class="hidden" data-object="corrected" data-value="{{data.0.hours}}"></span>
+                  <input type="text" class="form-control {% if not data.0 %} hidden {% endif %}" name="general-accept-hours" value="{{ data.0.hours }}" />
+                </td>
+              </tr>
+              <tr class="analyze-correction">
+                <th scope="row">Further Instructions</th>
+                <td>
+                  <span class="hidden" data-object="current" data-value="{{data.1.further_instruction}}"></span>
+                  <span>{{ data.1.further_instruction }}</span>
+                  <input type="hidden" name="general-reject-further_instruction" value="{{ data.1.further_instruction }}" />
+                </td>
+                <td>
+                  <span class="hidden" data-object="corrected" data-value="{{data.0.further_instruction}}"></span>
+                  <textarea class="form-control {% if not data.0 %} hidden {% endif %}" name="general-accept-further_instruction" cols="35" rows="5">{{ data.0.further_instruction }}</textarea>
+                </td>
+              </tr>
+          </table>
+          <div class="panel-footer text-right">
+            <label class="radio-inline">
+              <input type="radio" name="general_information-action" value="reject" id="general-accept" {% if 'No Updates' in data.2.operation %}
+                     checked="selected" {% else %} required="required"{%endif%} /> Do Not Update
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="general_information-action" value="accept" id="general-discard" required="required" /> Update Using Correction
+            </label>
+          </div>
+        </div>
+    </div>
+{% endfor %}
+
+{% if submitter_form %}
+    <div class="panel-body" >
+    {% crispy submitter_form %}
+    </div>
+{% endif %}
+
+<div class="row">
+    <div class="col-xs-12">
+      <button class="btn btn-success btn-submit btn-outline btn-md pull-right" data-object="correction-submitter">
+        Accept/Submit Changes</button>
+      <button class="btn btn-default btn-md" type="submit" name="reject-correction">Reject All Changes</button>
+    </div>
+</div>
+
+</form>
+{% endif %}
+
+<small class="text-muted"><strong>Request ID:</strong> {{ correction.request_id}}</small>
+
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+<script src="{% static 'js/merge.js' %}"></script>
+<script src="{% static 'js/eod.js' %}"></script>
+{% endblock %}
+
+  </div>
+</div>

@@ -1,0 +1,27 @@
+{% load compress staticfiles %}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">{{ title }}</h4>
+    </div>
+    <div class="panel-body">
+    {% for dates in dates_list %}
+        {% if dates.grouper == date_type_reg %}
+        {% include "manager/dashboard/election_view_dates.html" with title=title_reg kind=dates.grouper dates=dates.list %}
+        {% endif %}
+    {% empty %}
+    No Dates
+    {% endfor %}
+
+    {% for dates in dates_list %}
+        {% if dates.grouper == date_type_req %}
+        {% include "manager/dashboard/election_view_dates.html" with title=title_req kind=dates.grouper dates=dates.list %}
+        {% endif %}
+    {% endfor %}
+
+    {% for dates in dates_list %}
+        {% if dates.grouper == date_type_sub %}
+        {% include "manager/dashboard/election_view_dates.html" with title=title_sub kind=dates.grouper dates=dates.list %}
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>

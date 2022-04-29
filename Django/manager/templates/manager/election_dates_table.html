@@ -1,0 +1,39 @@
+{% load bootstrap bootstrap3 formset_tags %}
+
+<div class="col-lg-12">
+    {% if formset.non_field_errors %}
+    <div class="alert alert-danger">
+        <a class="close" data-dismiss="alert">&times;</a>
+        {% for non_field_error in formset.non_field_errors %}
+             {{ non_field_error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {{ formset.management_form }}
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th class="col-lg-3">Type</th>
+                <th class="col-lg-3">Date</th>
+                <th class="col-lg-2">Time</th>
+                <th class="col-lg-2">Time Zone</th>
+                <th class="col-lg-1"><!-- actions --></th>
+            </tr>
+        </thead>
+        <tbody data-formset-body>
+        {% for form in formset %}
+        {% include "manager/election_date_table_formset.html" with form=form only %}
+        {% endfor %}
+        <tr data-formset-empty-form>
+            <td colspan="5">No Dates</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <script type="form-template" data-formset-empty-form>
+    {% escapescript %}
+    {% include "manager/election_date_table_formset.html" with form=formset.empty_form only %}
+    {% endescapescript %}
+    </script>
+</div>

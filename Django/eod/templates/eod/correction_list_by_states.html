@@ -1,0 +1,84 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs dict_utils %}
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/eod.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block admin_header %}
+<h2 class="page-header">Corrections By State
+  <div class='pull-right'>
+    <a  class="export-state btn btn-success btn-xs {% if all_states_download_url  %}hidden{% endif %}"
+        title='Export all states as Excel file'
+        href="{% url 'eod:export-all-states' %}"
+        data-state-id='all'>
+      <span class='export-all'><i class='fa fa-download'></i> Export All</span>
+      <span class='exporting hidden'><i class='fa fa-spinner fa-spin'></i> Exporting All <progress val='0' max='0'>0.00%</progress></span>
+    </a>
+    <span class='export-status'>
+      <a class='btn btn-success btn-sm download-ready {% if not all_states_download_url %}hidden{% endif %}'
+         href='{{ all_states_download_url }}'> <span class='fa fa-download'></span> Download All States
+      </a>
+      <i class="download-error hidden pull-right text-danger glyphicon glyphicon-exclamation-sign" title=""></i>
+    </span>
+  </div>
+</h2>
+{% endblock %}
+
+
+{% block admin_content %}
+<table class='table states-container'>
+  <caption><!-- Optional table caption. --></caption>
+  <thead>
+    <tr>
+      <th class='state_number'>#</th>
+      <th class='state_name'>State</th>
+      <th class='state_total'>Total Records</th>
+      <th class='state_actions text-center'>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    {% for state in states_list %}
+    <tr>
+      <th class='state_number' scope='row'>{{ forloop.counter0|add:states_list.start_index }}</th>
+      <td class='state_name'><a href='{% url 'eod:corrections-by-state' state.id %}'>{{ state.name }}</a></td>
+      <td class='state_total'>{{ state.total_officials }}</td>
+      <td class='state_actions text-center'>
+
+        <a href="{% url 'eod:export-state' pk=state.id %}"
+           data-state-id='{{ state.name|lower }}'
+           class="export-state btn btn-xs {% if state.download_url %}hidden{% endif %}"
+           title='Export {{ state.name }} as Excel file'>
+
+          <span class='export-all'><i class='fa fa-download'></i> </span>
+          <span class='exporting hidden'><progress val='0' max='0'>0.00%</progress></span>
+
+        </a>
+        <span class='export-status'>
+          <a  class='download-ready {% if not state.download_url %}hidden{% endif %}'
+              title='Download {{ state.name }} Excel file'
+              href='{{ state.download_url }}'>Download
+          </a>
+          <i class="download-error hidden text-danger glyphicon glyphicon-exclamation-sign" title="">
+          </i>
+        </span>
+
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include "paginator.html" with items=states_list %}
+
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+<script src="{% static 'js/jquery.fileDownload.js' %}"></script>
+<script src="{% static 'js/export.js' %}"></script>
+{% endblock %}

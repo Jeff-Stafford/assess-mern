@@ -1,0 +1,134 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs crispy_forms_tags %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static "css/eod.css" %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block body_class %}{{ block.super }} admin submit-update{% endblock %}
+
+{% block admin_header %}
+
+<div class="navbar-fixed-top election-info">
+  <div class="container">
+    <div class='row'>
+      <div class="col-xs-12 col-sm-5">
+        <select data-action="change-region" class="form-control input-sm" style="height:27px; margin-bottom:5px; margin-top:12px;">
+        {% for lo in officials %}
+        <option {% if local_official.pk == lo.pk %} selected="selected" {% endif %}
+        value="{% url "eod:local-official-detail" local_official.region.state.pk lo.pk %}">{{lo.region.name}}; {{lo.last_updated_date}}</option>
+        {% endfor %}
+        </select>
+      </div>
+        <div class='col-xs-12 col-sm-7'>
+
+        <div class="buttons pull-right">
+          <a href="#" class="btn btn-success btn-xs" data-object="add-officer"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Contact</a>
+          <a href="#" class="btn btn-success btn-xs" data-object="add-address"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Address</a>
+          <a class="btn btn-success btn-xs" role="button" data-toggle="modal" data-target="#requestUpdates" aria-expanded="false" aria-controls="requestUpdates">Request Updates</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="election-info">
+  <div class="container">
+    <h2 class="page-header">
+      <small>Election Information for</small><br/>
+      {{ local_official.region.name }}, {{ local_official.region.state.name }}
+    </h2>
+    <div style="position:relative; top:-8px;">
+    <div class="pull-right text-muted">
+        <small><strong>Last Updated:</strong> {{ last_updated }}</small>
+    </div>
+     {% if local_official.has_corrections %}
+        <a class="pull-left" href="{% url "eod:public-submit-updates" corrections.0.request_id %}"><small>(View Public Correction Page)</small></a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class='form-container'>
+  <div class="panel panel-form">
+    <div class="panel-heading">
+      <h3>Voting Region Details</h3>
+    </div>
+      <div class="panel-body officers-container">
+        <div class="col-xs-12 col-sm-5 col-sm-offset-1">
+          <b>County Type:</b>
+          {{local_official.region.county.county_type}}
+          <br/><br/>
+          <b>County Name:</b>
+          {{local_official.region.county.name}}
+        </div>
+        <div class="col-xs-12 col-sm-5">
+          <b>Municipality Type:</b>
+          {{local_official.region.municipality.municipality_type}}
+          <br/><br/>
+          <b>Municipality Name:</b>
+          {{local_official.region.municipality.name}}
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Update Requests -->
+<div class="modal fade" id="requestUpdates" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Request Updates</h4>
+      </div>
+      <div class="modal-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="local-official" value="{{local_official.pk}}" />
+          <input type="hidden" name="send-to-all-officials" />
+            <div class="form-group" style="padding-left:16px;">
+            <div id="send-request-for-updates">
+              Send Updates to all Contacts in {{ local_official.region.name }}?
+              <div class="checkbox" style="display:none">
+                <label><input type="checkbox" name="include-officers" checked="checked" value="1"></label>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-success btn-sm pull-right" type="submit">Yes, Send Request</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+    {% endblock %}
+
+    {% block admin_content %}
+
+      <div data-object="error-monitorable">
+        <div data-object="form-errors-holder" class="hidden">
+          <div class="alert alert-danger">
+            <strong>There was a problem with your submission.</strong>
+            <p>Please review this form and try again.</p>
+          </div>
+        </div>
+        {% crispy form %}
+      </div>
+
+    {% include "paginator.html" with items=officials %}
+
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+    <script src="{% static 'js/lib/eod_errors.js' %}"></script>
+    <script src="{% static 'js/imask.download.js' %}"></script>
+    <script src="{% static 'js/eod.js' %}"></script>
+{% endblock %}

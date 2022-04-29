@@ -1,0 +1,13 @@
+{% load compress staticfiles %}
+{% if dates %}
+<div class="col-xs-12 row">
+    <h5>{{ title }}</h5>
+    <ul class="row">
+      {% for dt in dates %}
+        {% if dt.date or dt.time %}
+        <li>{{ dt }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+</div>
+{% endif %}

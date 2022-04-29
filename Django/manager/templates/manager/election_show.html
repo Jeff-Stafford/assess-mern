@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load compress staticfiles %}
+
+{% block head_jquery_css %}
+{% endblock head_jquery_css %}
+
+{% block head_jquery_plugins_js %}
+{% endblock head_jquery_plugins_js %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block content %}
+  <!-- dashboard -->
+  <div class="container">
+    <div class="col-lg-12 ">
+      {{ block.super }}
+    </div>
+    {% if not election.is_public %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election is not publicly available.</div>
+    {% elif election.election_status == 'P' %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election is not approved yet.</div>
+    {% elif election.election_status == 'D' %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election has been deleted.</div>
+    {% elif election.election_status == 'Z' %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election has been archived.</div>
+    {% else %}
+      {% include "manager/election_show_details.html" with election=election %}
+      {% include "manager/social_networks.html" with election_short_url=election_short_url %}
+    {% endif %}
+  </div>
+  <!-- /dashboard -->
+{% endblock content %}
+
+{% block tail_jquery_js %}
+<!-- no app js -->
+{% endblock tail_jquery_js %}
+
+{% block tail_uncompressed_js %}
+{% include "manager/social_networks_js.html" %}
+{% endblock %}

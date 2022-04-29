@@ -1,0 +1,29 @@
+{% load bootstrap bootstrap3 formset_tags %}
+
+<div class="row form-group">
+    {% if formset.non_field_errors %}
+    <div class="alert alert-danger">
+        <a class="close" data-dismiss="alert">&times;</a>
+        {% for non_field_error in formset.non_field_errors %}
+             {{ non_field_error }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div id="{{ formset_id }}" class="col-xs-12">
+        {{ formset.management_form }}
+        <!-- exists formset -->
+        <div class="row vote-registration-request-deadline-row" data-formset-body>
+        {% for form in formset %}
+        {% include "manager/election_date_formset.html" with form=form row_idx=forloop.counter0 only %}
+        {% endfor %}
+        </div>
+        <!-- /exists formset -->
+
+        <script type="form-template" data-formset-empty-form>
+        {% escapescript %}
+        {% include "manager/election_date_formset.html" with form=formset.empty_form only %}
+        {% endescapescript %}
+        </script>
+    </div>
+</div>

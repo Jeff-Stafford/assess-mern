@@ -1,0 +1,89 @@
+{% load crispy_forms_tags %}
+
+{{ address_formset.management_form }}
+
+<script type="text/html" data-object="address-primary-contact-template">
+  <div class="form-group">
+    <label  class="control-label col-xs-4">Additional Contact</label>
+    <div class="controls col-xs-5">
+      <select name="address-__prefix__-additional_contacts" class="select form-control" data-required="yes">
+        <option value="">Please Select a Contact</option>
+        {% for contact in local_official_contacts %}
+        <option value="{{contact.0}}">{{contact.1}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-xs-1">
+      <a data-object="remove-contact" class="btn inline" title="Remove Additional Contact"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></a>
+    </div>
+  </div>
+</script>
+
+<!-- empty address formset -->
+<script type="text/html" id="address-template">
+  <li class="address-form col-xs-12" data-object="wrapper" data-id="__prefix__">
+    <div data-object="id_address-__prefix__" data-id="__prefix__">
+      <br/>
+    <div class="none">
+      <h3>Address __count__
+        <button type="button" class="btn btn-md btn-icon pull-right" data-object="remove-entity" title="Remove this Address">
+          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+        </button>
+      </h3>
+      <div class="address-form col-xs-12" data-id="__prefix__">
+        <div class="address-form-instance">
+          <input type="hidden" name="id" value="nid-__prefix__" />
+          {{ address_formset.empty_form.DELETE.as_hidden }}
+          {% crispy address_formset.empty_form address_formset_helper %}
+
+          <div class="form-group">
+            <label  class="control-label col-xs-4 requiredFieldMark">Primary Contact</label>
+            <div class="controls col-xs-5">
+              <select name="address-__prefix__-primary_contact" class="select form-control" data-required="no", required="required">
+                <option value="">None</option>
+                {% for contact in local_official_contacts %}
+                {% if contact.0 == primary_contact.pk %}
+                <option selected value="{{contact.0}}">{{contact.1}}</option>
+                {% else %}
+                <option value="{{contact.0}}">{{contact.1}}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-xs-1">
+              <a data-object="add-new-contact"
+                 data-target="__prefix__" class="btn inline" title="Additional Contact for this Address"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+            </div>
+          </div>
+          <div data-object="additional-contacts-pane" data-target="address__prefix__">
+          </div>
+
+          {% include "eod/localofficialcorrection_address_functions.html" with address_functions=address_functions address_type="address-__prefix__" %}
+        </div>
+      </div>
+    </div>
+    </div>
+</div>
+  </li>
+</script>
+<!-- /empty address form -->
+
+<ul class="nondragable">
+{% for address in addresses %}
+<li data-object="wrapper" class="address-form col-xs-12">
+  <h3>
+    Address {{forloop.counter}}
+    {{ address.formset.DELETE.as_hidden }}
+    <button type="button" class="btn btn-md btn-icon pull-right" data-object="remove-entity" title="Remove this Address">
+      <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+    </button>
+  </h3>
+  <div class="address-form-instance">
+
+    {% crispy address.formset address_formset_helper %}
+    {% include "eod/localofficialcorrection_address_contacts.html" with local_official_contacts=local_official_contacts address=address idx=forloop.counter|add:"-1" %}
+    {% include "eod/localofficialcorrection_address_functions.html" with address_functions=address_functions address=address idx=forloop.counter|add:"-1" %}
+  </div>
+</li>
+{% endfor %}
+</ul>

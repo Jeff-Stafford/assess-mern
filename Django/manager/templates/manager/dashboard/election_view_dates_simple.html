@@ -1,0 +1,12 @@
+{% load compress staticfiles %}
+{% if dates %}
+<div class="col-xs-12">
+    <ul class="pull-left ul-horizontal">
+      {% for dt in dates %}
+        {% if dt.date %}
+          <li>{{ dt.date }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+</div>
+{% endif %}

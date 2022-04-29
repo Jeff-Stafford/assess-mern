@@ -1,0 +1,44 @@
+{% extends "manager/wizard/base_wizard.html" %}
+{% load bootstrap bootstrap3 i18n breadcrumbs %}
+
+{% block head %}
+    {{ block.super }}
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block body_sub_class %}wizard-location{% endblock %}
+
+{% block wizard_page %}
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+
+    <div class="tab-content">
+        <div class="tab-pane fade active in" id="general">
+            <h2>Where is this election taking place?</h2>
+            <h3 class="section">Election Location</h3>
+            <div class="form-group row" id="additional-field-model" >
+                {{ wizard.form.location|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            {% if not user.is_authenticated %}
+            <h3 class="section">Contact</h3>
+            <div class="form-group row">
+                {{ wizard.form.contact_email|bootstrap:"form_group=col-xs-6,ignore_form_group=1"}}
+                {{ wizard.form.contact_phone|bootstrap:"form_group=col-xs-6,ignore_form_group=1"}}
+            </div>
+            {% endif %}
+            <div class="form-group row">
+                <div class="col-xs-12">
+                    {% if wizard.steps.next %}
+                    <button class="btn btn-success pull-right next" type="submit" name="xwizard_goto_step" value="{{ wizard.steps.next }}" role="button">Next</button>
+                    {% endif %}
+                    {% if wizard.steps.prev %}
+                    <button class="btn btn-default pull-left back" type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" role="button">Back</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock wizard_page %}
+

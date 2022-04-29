@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load compress staticfiles bootstrap formset_tags crispy_forms_tags %}
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/eod.css' %}" />
+{% endblock css %}
+
+{% block head %}
+{{ block.super }}
+{{ form.media }}
+{% endblock %}
+
+{% block body_class %}{{ block.super }} public submit-update{% endblock %}
+
+{% block content %}
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Information:</h4>
+      </div>
+      <div class="modal-body">
+        <h4>IMPORTANT 2018 UPDATES - PLEASE READ</h4>
+        <p>The Election Official Directory (EOD) data entry and management process has been updated.</p>
+        <p>
+          Please read the following notes before editing or confirming your data record:
+          <ol>
+            <li>Submit Updates: remember to click “Submit Updates” after you review and/or edit your record</li>
+            <li>Contacts: contacts are now listed first, followed by addresses</li>
+            <li>Edit: to edit the data in your record, simply over-write the existing data. </li>
+            <li>Add: use the new "Add Contact" or "Add Address" buttons to add a new contact or a new address. </li>
+            <li>Delete: you can delete a contact by clicking the trash icon</li>
+            <li>New Address Fields: Every address now has the following fields associated with it:</li>
+            <ul>
+              <li>Website URL</li>
+              <li>Primary Contact and Additional Contacts for that address</li>
+              <li>Check Boxes to indicate how the address is used mail purposes and administration purposes</li>
+            </ul>
+          </ol>
+        <p>
+
+        <p>After you make any corrections to your record, or confirm that it is correct, always remember to hit “Submit Updates”.</p>
+        <p>
+          If you have any issues, or questions submitting an update or confirming that your record is correct, please contact us at
+          <a href="mailto:eod@usvotefoundation.org" title="Click to send us an Email.">
+            eod@usvotefoundation.org
+          </a>
+        </p>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container container-full'>
+  <div class='row'>
+    <div class='col-xs-12'>
+      <!--
+          <div class='col-xs-12 text-center'>
+            <div class="alert alert-info alert-dismissable">
+              <p class='lead'>This data entry screen is for <strong>Election Officials ONLY</strong>.</p>
+              <p>Voters please go to <a href='#'>Register to Vote</a> or to the <a href='#'>Voter Help Desk</a>.</p>
+            </div>
+          </div>
+          -->
+
+      {{ block.super }}
+      <!--
+          <div class='col-xs-12'>
+            <a href="#" data-toggle="modal" data-target="#myModal">
+              <h4 class="pull-left no-padding no-margin">
+                <span class="label label-danger">IMPORTANT 2018 UPDATES - PLEASE READ - CLICK TO SEE MORE</span>
+              </h4>
+            </a>
+            <span class='label-updated pull-right'><strong>Updated:</strong> {{ lo.updated }}</span>
+          </div>
+          -->
+      <div class="navbar-fixed-top election-info">
+        <div class="container">
+          <div class='row'>
+            <div class='col-xs-12'>
+              <div class="buttons pull-right">
+                <a href="#" class="btn btn-success btn-xs" data-object="add-officer"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Contact</a>
+                <a href="#" class="btn btn-success btn-xs" data-object="add-address"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Address</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="election-info row">
+        <div class="container">
+          <h2 class="page-header">
+            <small>Election Information for</small><br/>
+            {{ local_official.region.name }}, {{ local_official.region.state.name }}
+          </h2>
+        </div>
+      </div>
+
+      {% if local_official.has_open_corrections %}
+      <div class='row'>
+        <h4>We are processing this Voting Region correction.</h4>
+        <p>The information has been sent to an EOD content manager. Request will be reviewed within 48 hours of submission before any changes are published to the site.</p>
+      </div>
+      {% else %}
+      <div class='row'>
+        <div class='col-xs-12 text-center' style="margin-bottom:10px; color:#555">
+          <p>Please confirm or submit changes to your contact record for review by our Election Services staff.</p>
+          <p><strong>We estimate 24-48 hours for submitted changes to take effect.</strong></p>
+        </div>
+      </div>
+
+      <div class="row" data-object="error-monitorable">
+
+        <div data-object="form-errors-holder" class="hidden">
+          <div class="alert alert-danger">
+            <p class="lead">Information:</p>
+            <p>Please carefully review this form and fill-in all missing fields.</p>
+          </div>
+        </div>
+
+        {% crispy form %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+<script src="{% static 'js/lib/eod_errors.js' %}"></script>
+<script src="{% static 'js/imask.download.js' %}"></script>
+<script src="{% static 'js/eod.js' %}"></script>
+{% endblock %}

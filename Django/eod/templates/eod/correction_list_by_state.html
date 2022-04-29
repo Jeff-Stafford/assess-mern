@@ -1,0 +1,95 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs %}
+{% block css %}
+<link rel="stylesheet" type="text/css" media="screen" href="{% static "css/eod.css" %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block admin_header %}
+<div class="row">
+
+  <h2 class="page-header">
+    {{ state.name }}
+    <a class="btn btn-success btn-sm pull-right" role="button" data-toggle="modal" data-target="#requestUpdates" aria-expanded="false" aria-controls="requestUpdates">Request Updates</a>
+  </h2>
+
+  <!-- Modal for Update Requests -->
+  <div class="modal fade" id="requestUpdates" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Request Updates</h4>
+        </div>
+        <div class="modal-body">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="send-to-all-officials" />
+            <div class="form-group" style="padding-left:16px;">
+              <div id="send-request-for-updates">
+                Send Updates to:
+                <div class="checkbox">
+                  <label><input type="checkbox" name="include-officers" value="1">All Officials for All Voting Regions in {{ state.name }}</label>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success btn-sm pull-right" type="submit">Send Request</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-body search">
+    {% include "_search_form.html" with form=search_form items=officials placeholder="Find a Local Official or Voting Region" %}
+  </div>
+
+  {% endblock %}
+
+  {% block admin_content %}
+  <table class="table table-responsive table-hover">
+    <caption><!-- Optional table caption. --></caption>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th class="nowrapword">Voting Region</th>
+        <th class="nowrapword">Updated</th>
+        <th class="nowrapword">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for official in officials %}
+      <tr>
+        <th scope="row">{{ forloop.counter0|add:officials.start_index }}</th>
+        <td>
+          <a href="{% url "eod:local-official-detail" state.id official.id %}">
+            {{ official.region.name }}
+          </a>
+        </td>
+        <td class="nowrapword">
+          <span title="{{ official.last_updated }}">{{ official.last_updated|date:"m/d/y" }}</span>
+        </td>
+        <td>
+          {% if official.corrections.all %}
+          <small>{% include "eod/human_status.html" with correction=official.corrections.all.0 %}</small>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">No records.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% include "paginator.html" with items=officials %}
+
+  {% endblock %}
+</div>

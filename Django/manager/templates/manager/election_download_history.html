@@ -1,0 +1,64 @@
+{% extends "admin_base.html" %}
+{% load compress staticfiles bootstrap formset_tags %}
+{% block css %}
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block head %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+
+{% block admin_header %}
+    {% url 'manager:election_update' election_id as election_update_url %}
+    {% url 'manager:election_results' election_id as election_results_url %}
+    {% url 'manager:election_download_history' election_id as election_download_history_url %}
+
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="{% if request.path == election_update_url %}active{% endif %}"><a href="{{ election_update_url }}">General Information</a></li>
+      <li role="presentation" class="{% if request.path == election_results_url %}active{% endif %}"><a href="{{ election_results_url }}">Results</a></li>
+      <li role="presentation" class="{% if request.path == election_download_history_url %}active{% endif %}"><a href="{{ election_download_history_url }}">Download History</a></li>
+    </ul>
+
+    <!-- <h2>{% if form.instance.id %}Update{% else %}Create{% endif %} Election</h2> -->
+{% endblock %}
+
+
+{% block admin_content %}
+  <div class="container">
+    {{ block.super }}
+    <h3>Download History</h3>
+    <table class='table states-container'>
+        <caption><!-- Optional table caption. --></caption>
+        <thead>
+            <tr>
+                <th class=''>Created At</th>
+                <th class=''>Downloaded At</th>
+                <th class=''>Downloaded By</th>
+                <!-- <th class=''>Status</th> -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in download_history %}
+            <tr>
+              <td>{{ d.created_at|date:"m/d/Y h:i:sA" }}</td>
+              <td>{{ d.downloaded_at|date:"m/d/Y h:i:sA" }}</td>
+              <td>{{ d.downloaded_by_user }}</td>
+              <!-- <td>{{ d.status }}</td> -->
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan=3>No records.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% include 'paginator.html' with items=download_history %}
+
+  </div>
+{% endblock %}
+
+{% block tail_uncompressed_js %}
+{% endblock tail_uncompressed_js %}

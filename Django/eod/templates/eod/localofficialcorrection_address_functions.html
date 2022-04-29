@@ -1,0 +1,54 @@
+<fieldset class="inline col-xs-10 col-xs-offset-1">
+  <legend><h4>This Address is Used For:</h4></legend>
+
+  <div class="controls col-xs-10 col-xs-offset-2">
+    <div class="form-group">
+      <div class="function radio">
+        <label for="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for_1">
+        <input type="radio" id="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for_1"
+               name="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for" data-required="yes"
+               {% if address.is_regular_mail %} checked="checked" {% endif %} value="1" />
+        Regular Mail</label>
+      </div>
+
+      <div class="function radio">
+        <label for="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for_2">
+        <input type="radio" id="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for_2"
+               name="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for" data-required="yes"
+               {% if address.is_physical %} checked="checked" {% endif %} value="2" />
+        Express Mail Delivery/Courier</label>
+      </div>
+
+      <div class="function radio">
+        <label for="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for_3">
+        <input type="radio" id="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for_3"
+               name="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-used_for" data-required="yes"
+               {% if address.is_regular_mail and address.is_physical %} checked="checked" {% endif %} value="3" />
+        Both Regular Mail &amp; Express Mail Delivery/Courier</label>
+      </div>
+
+    </div>
+
+    <div class="row" data-object="address-functions">
+      <h5 class="functions-header requiredFieldMark"><b>Address Functions: <i>(at least one is required)</i></b></h5>
+      {% for type in address_functions %}
+      <div class="form-group">
+        {% if type.title %}
+        <h5>{{ type.title }}</h5>
+        {% endif %}
+
+        {% for function in type.functions %}
+        <div class="checkbox" style="padding-left:16px;">
+          <label for="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-function-{{function.code}}">
+            <input type="checkbox" id="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-function-{{function.code}}"
+                   name="address-{% if idx >= 0 %}{{idx}}{% else %}__prefix__{% endif %}-functions"
+                   {% if function.code in address.functions %} checked="checked" {% endif %} value="{{ function.code }}" />
+            {{ function.title }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</fieldset>

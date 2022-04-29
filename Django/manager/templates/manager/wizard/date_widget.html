@@ -1,0 +1,33 @@
+{% load bootstrap bootstrap3 formset_tags %}
+
+<div class="row form-group" >
+    <div class="col-xs-7 col-xs-offset-2">
+        {{ date_mode_field }}
+        <button
+            class="btn btn-success btn-xs pull-right addDetail "
+            type="button"
+            data-target="#{{ formset_id }}"
+            data-mode="#{{ date_mode_field.auto_id }}"
+            aria-expanded="false"
+            aria-controls="{{ formset_id }}">Add Detail</button>
+
+        {{ date_field|bootstrap}}
+    </div>
+
+    <div id="{{ formset_id }}" class="col-xs-12 collapse" data-formset-prefix="{{ formset.prefix }}">
+        {{ formset.management_form }}
+        <div class="row vote-registration-request-deadline-row" data-formset-body>
+        {% for f in formset %}
+            <!-- exists formset -->
+            {% include "manager/wizard/date_formset.html" with form=f only %}
+            <!-- /exists formset -->
+        {% endfor %}
+        </div>
+
+        <script type="form-template" data-formset-empty-form>
+        {% escapescript %}
+        {% include "manager/wizard/date_formset.html" with form=formset.empty_form only %}
+        {% endescapescript %}
+        </script>
+    </div>
+</div>

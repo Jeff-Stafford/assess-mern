@@ -1,0 +1,8 @@
+{% for title, url in breadcrumbs %}
+    {% if forloop.last %}
+    {{ title }}
+    {% elif not forloop.first %}
+    {{ title }} /
+    {% endif %}
+{% endfor %}
+

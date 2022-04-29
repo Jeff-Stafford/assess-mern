@@ -1,0 +1,25 @@
+{% load compress staticfiles bootstrap bootstrap3 %}
+<!-- election url -->
+<div class="col-lg-12" data-formset-form>
+    {% for hidden in form.hidden_fields %}
+    {{ hidden }}
+    {% endfor %}
+    <div class="col-lg-4">
+        {{ form.url_type|bootstrap}}
+    </div>
+
+    <div class="col-lg-6">
+        {{ form.url|bootstrap}}
+    </div>
+
+    <div class="col-lg-2 actions-column text-right">
+        {% if row_idx == 0 %}
+        <label></label>
+        {% endif %}
+        <div>
+            {{ form.DELETE }}
+            <button class="btn btn-secondary btn-xs pull-right delete-row" type="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove</button>
+        </div>
+    </div>
+</div>
+<!-- /election url -->

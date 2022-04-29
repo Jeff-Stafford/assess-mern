@@ -1,0 +1,88 @@
+{% extends "manager/wizard/base_wizard.html" %}
+{% load static bootstrap i18n %}
+
+{% block head %}
+    {{ block.super }}
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block body_sub_class %}wizard-additional{% endblock %}
+
+{% block wizard_page %}
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+
+    <div class="tab-content">
+        <!-- Additional Info-->
+        <div class="tab-pane fade active in" id="additional">
+            <h2>Add additional information (optional)</h2>
+            <br/>
+            <div class="form-group row">
+                    {{ wizard.form.additional_information|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            {% if request.user.is_authenticated %}
+            <div class="form-group row default_contact_email">
+                    {{ wizard.form.use_user_email_as_contact_email|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+                    {{ wizard.form.contact_email|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            {% endif %}
+            <div class="form-group row default_elections_website {% if not request.user.is_authenticated %}hide_label{% endif %}">
+                    {{ wizard.form.use_default_elections_website|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+                    {{ wizard.form.elections_website|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            <div class="form-group row">
+                    {{ wizard.form.official_candidate_listing|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            <div class="form-group row">
+                    {{ wizard.form.sample_ballot_information|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+            <div class="form-group row">
+                    {{ wizard.form.feedback|bootstrap:"form_group=col-xs-12,ignore_form_group=1"}}
+            </div>
+
+            <div class="row form-group application-nav">
+                <div class="col-xs-12">
+                    {% if wizard.steps.prev %}
+                    <button class="btn btn-default pull-left back" type="submit" name="wizard_goto_step" value="{{ wizard.steps.prev }}" role="button">Back</button>
+                    {% endif %}
+
+                    <div class="pull-right">
+                        <!-- <a class="btn btn-default" href="#" data-toggle="modal" data-target="#myModal">Preview Your Election</a> -->
+
+                        <button class="btn btn-success" type="submit" >Add Your Election</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Preview</h4>
+                    </div>
+                    <div class="modal-body">
+                        Coming Soon...
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock wizard_page %}
+
+{% block tail_uncompressed_js %}
+{% if request.user.is_authenticated %}
+<script src="{% static 'js/election_utils.js' %}"></script>
+<script type="text/javascript">
+    init_field('.default_contact_email', "#id_additional-contact_email ~ span input,#id_additional-contact_email")
+    init_field('.default_elections_website')
+</script>
+{% endif %}
+{% endblock %}

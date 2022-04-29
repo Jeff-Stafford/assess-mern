@@ -1,0 +1,52 @@
+<h2>{{ election.title }}
+{% if request.user.is_authenticated %} <span class="label label-default">{{ election.get_election_status_display }}</span>
+{% else %}
+{% if election.election_status == 'Z' %} <sup><small>Archived</small></sup>{% endif %}
+{% endif %}
+</h2>
+<dl class='lead xdl-horizontal'>
+  <dt>State</dt>
+  <dd>{{ election.get_election_state.name }}</dd>
+  <dt>Locations</dt>
+  <dd><ul>
+    {% for l in election.locations.all %}
+    <li>{{ l.name }}</li>
+    {% endfor %}
+  </ul></dd>
+  <dt>Election Date</dt>
+  <dd>{{ election.election_date }}
+  <dt>Additional Dates</dt>
+  <dd>
+    {% regroup election.dates.all by get_kind_display as dates_list %}
+    {% for dates in dates_list %}
+      <dt>{{ dates.grouper }}</dt>
+      <dd>
+      <ul>
+      {% for dt in dates.list %}
+      <li>{{ dt }}</li>
+      {% endfor %}
+      </ul>
+      </dd>
+    {% endfor %}
+  </dd>
+  <dt>Election Level</dt>
+  <dd>{{ election.election_level.name }}
+  <dt>Election Type</dt>
+  <dd>{{ election.election_type.name }}
+  <dt>Election Day Registration is Available</dt>
+  <dd>{{ election.election_day_registration_is_available|yesno:"Yes,No" }}
+  <dt>Election Additional Information</dt>
+  <dd>{{ election.additional_information }}
+  <dt>Links</dt>
+  <dd><ul>
+    {% for l in election.urls.all %}
+    <li>{{ l.url_type.name }}
+    {% if l.name %}
+      <a href='{{ l.url }}'>{{ l.name }}</a>
+    {% else %}
+      <a href='{{ l.url }}'>{{ l.url }}</a>
+    {% endif %}
+    </li>
+    {% endfor %}
+  </ul></dd>
+</dl>

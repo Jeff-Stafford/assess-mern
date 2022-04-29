@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load compress staticfiles bootstrap formset_tags breadcrumbs %}
+{% load crispy_forms_tags crispy_forms_filters %}
+
+{% block head_jquery_css %}
+{% endblock head_jquery_css %}
+
+{% block head_jquery_plugins_js %}
+{% endblock head_jquery_plugins_js %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/election-manager.css' %}" />
+{% endblock css %}
+
+{% block content %}
+
+  <!-- empty attachment formset -->
+  <script type="text/html" id="attachment-template">
+    <div class='attachment-form col-lg-12'>
+      <div class='attachment-form-instance'>
+        {{ attachment_formset.empty_form.DELETE.as_hidden }}
+        <button type='button' class='btn btn-delete pull-right' title='Delete'>
+          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+        </button>
+        {% crispy attachment_formset.empty_form attachment_formset_helper %}
+      </div>
+    </div>
+  </script>
+  <!-- /empty attachment formset -->
+
+  <div class="container">
+    <div class="col-lg-12 ">
+      {{ block.super }}
+    </div>
+    {% if not election.is_public %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election is not publicly available.</div>
+    {% elif election.election_status == 'P' %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election is not approved yet.</div>
+    {% elif election.election_status == 'D' %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election has been deleted.</div>
+    {% elif election.election_status == 'Z' %}
+      <h3>Election Details</h3>
+      <div class="alert alert-warning" role="alert">The election has been archived.</div>
+    {% else %}
+      <h2>Upload Election Results</h2>
+      <h3>{{ election.title }} / {{ election.election_date }}</h3>
+      <h3>Election Results</h3>
+      <form class="form-horizontal" enctype="multipart/form-data" method="post">
+
+      <div class='col-lg-12'>
+      <!-- election result form -->
+      {% crispy form %}
+      <!-- /election result form -->
+      </div>
+
+      <div class="form-group">
+        <div class="controls col-lg-4"></div>
+        <div class="controls col-lg-6">
+          <input type="submit" name="submit" value="Upload" class="btn btn-success btn btn-submit btn-default pull-right" id="submit-id-submit">
+        </div>
+      </div>
+
+      </form>
+    {% endif %}
+  </div>
+{% endblock content %}
+
+{% block tail_jquery_js %}
+<!-- no app js -->
+{% endblock tail_jquery_js %}
+
+{% block tail_uncompressed_js %}
+{% include "manager/social_networks_js.html" %}
+<script src="{% static 'js/attachment.js' %}"></script>
+<!-- empty attachment formset -->
+<script type="text/html" id="attachment-form-template">
+<div class='attachment-form col-lg-12'>
+    <div class='attachment-form-instance'>
+        <small class="glyphicon glyphicon-trash pull-right btn-delete" aria-hidden="true"></small>
+        {% crispy attachment_formset.empty_form attachment_formset_helper %}
+    </div>
+</div>
+</script>
+<!-- /empty attachment formset -->
+{% endblock %}

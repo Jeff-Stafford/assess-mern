@@ -1,0 +1,333 @@
+div.form-container div.form-group:not(.deleted) {
+    margin-bottom: 10px;
+}
+
+.form-container div.officer-form:not(:last-child),
+.form-container div.officer-form.deleted:not(:last-child),
+.form-container div.address-form:not(:last-child),
+.form-container div.address-form.deleted:not(:last-child) {
+    padding-top: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.form-container div.officer-form:last-child,
+div.officer-form.deleted:last-child,
+.form-container div.address-form:last-child,
+div.address-form.deleted:last-child { padding:10px 0;}
+
+.form-container div.officer-form > .officer-form-instance,
+.form-container div.address-form > .address-form-instance {
+    display: block;
+}
+
+.address-form-instance .btn-delete,
+.officer-form-instance .btn-delete {
+    color: #337ab7;
+}
+
+.form-container fieldset {
+    margin-top: 16px;
+}
+
+.form-container fieldset.inline{
+    border: solid #e5e5e5 1px;
+    padding-bottom: 12px;
+}
+.form-container fieldset.inline legend{
+    padding: 0 12px;
+    width: auto;
+    border: 0;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 7px;
+}
+
+.form-container .btn-add:not(.inline) {
+    margin-top: -10px;
+    margin-right: 14px;
+}
+
+.btn.btn-top-right {
+  position: absolute;
+  top: 17px;
+  right: 10px;
+}
+
+.form-container div.officer-form,
+.form-container div.address-form {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 10px;
+}
+
+.officer-form-undo,
+.address-form-undo {
+    display: none;
+}
+
+.form-container div.officer-form.deleted > .officer-form-instance,
+.form-container div.address-form.deleted > .address-form-instance {
+    display: none;
+}
+
+.form-container div.officer-form.deleted > .officer-form-undo,
+.form-container div.address-form.deleted > .address-form-undo {
+    display: block;
+    margin-bottom: 40px;
+}
+
+.form-container div.officer-form.deleted > .officer-form-instance label,
+.form-container div.officer-form.deleted > .officer-form-instance input,
+.form-container div.address-form.deleted > .address-form-instance label,
+.form-container div.address-form.deleted > .address-form-instance input {
+}
+
+.form-container hr.officer-divider,
+.form-container hr.address-divider {
+    width: 100%;
+    color: black;
+    height: 1px;
+    background-color: #ccc;
+}
+
+.form-container .btn.btn-delete {
+    background-color: transparent;
+}
+
+.form-container .btn.btn-delete:hover  {
+    border: 1px solid #ccc;
+    background-color: transparent;
+}
+
+.public-submit-update legend {
+    color: #b20837;
+}
+
+.public-submit-update .inline-fieldset legend {
+    font-size:14px;
+    font-weight: bold;
+    color: #000;
+    border:none;
+    width: auto;
+    padding-right: 12px;
+    padding-left: 12px;
+}
+
+.public-submit-update .inline-fieldset { 
+    border:solid #dedede 1px;
+    width:80%;
+}
+
+.public-submit-update .form-group label {
+    xfont-weight: normal;
+}
+
+.form-container .submitted-by-container legend {
+    padding-top: 80px;
+    padding-left: 80px;
+    border-color: transparent;
+}
+
+.form-container .submitted-by-container .btn-submit {
+    margin-top: 30px;
+}
+
+.form-container .asteriskField {
+    display:none;
+}
+
+.submitted-by-container .asteriskField {
+  display:inline;
+  color: #b20837;
+  margin-left: 1px;
+}
+
+.requiredFieldMark:after {
+  display:inline;
+  color: #b20837;
+  margin-left: 1px;
+  content: " *"
+}
+
+.form-container .submitted-by-container textarea[readonly],
+.form-container .submitted-by-container input[readonly] {
+    background-color: #f9f9f9;
+}
+
+/*
+div.form-container div.form-group:not(.deleted) {
+    margin-bottom: px;
+}
+
+
+.form-container input,
+.form-container select {
+    border-width: 0px;
+    border-radius: 0px;
+    box-shadow: unset;
+    border-bottom-width: 1px;
+}
+
+.form-container input:focus,
+.form-container select:focus {
+    border-bottom-width: 1px;
+}
+*/
+
+
+.nowrapword {
+    white-space: nowrap;
+}
+
+.wrapword {
+    white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+    white-space: -webkit-pre-wrap; /*Chrome & Safari */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    white-space: pre-wrap;       /* css-3 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    word-break: break-all;
+    white-space: normal;
+}
+
+.longtextdots {
+    display: inline-block;
+    width: 160px !important;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.regiontextdots {
+    display: inline-block;
+    width: 180px !important;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+body > div.container > table > thead > tr > th.state_number,
+body > div.container > table > tbody > tr > td.state_number {
+    width: 6%;
+}
+
+body > div.container > table > thead > tr > th.state_name,
+body > div.container > table > tbody > tr > td.state_name {
+    width: 64%;
+}
+
+body > div.container > table > thead > tr > th.state_total,
+body > div.container > table > tbody > tr > td.state_total {
+    width: 20%;
+}
+
+body > div.container > table > thead > tr > th.state_action,
+body > div.container > table > tbody > tr > td.state_action {
+    width: 10%;
+}
+
+.exporting progress {
+    width: 50px;
+}
+
+.label-updated {
+    margin-bottom: 18px;
+}
+
+.has-error {
+    padding: 12px 0;
+    background-color: #f2dede;
+    border-radius: 2px;
+}
+
+.toolbar-panel {
+    background-color: #F5F5F5;
+    border-radius: 4px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.has-error .exclude .form-control {
+    border: 1px solid #ccc
+}
+
+table.table.record-amendment tr.highlight {
+  background-color: yellow;
+  color: green;
+}
+
+table.table.record-removal.highlight tr.analyze-correction {
+  background-color: #b20837;
+  color: #fff;
+  text-decoration: line-through;
+}
+
+table.table.record-removal.highlight tr.analyze-correction input {
+  color: #000;
+}
+
+table.table.record-addition.highlight tr.analyze-correction input {
+  color: #000;
+}
+
+table.table.record-addition.highlight tr.analyze-correction {
+  background-color: green;
+  color: #fff;
+}
+
+table.table.record-addition.highlight tr.analyze-correction select {
+  color: #000;
+}
+
+table.table.record-removal span.hidden-if-deleted {
+  display:none !important;
+}
+
+table.table.record-as-is td input[type="text"] {
+  color: gray;
+}
+
+table.table tr.operations td {
+  padding-left: 15px;
+  padding-top:11px;
+  background-color: gray;
+  color: #fff;
+  font-style: bold;
+  font-size: 110%;
+}
+
+.no-padding {
+  padding:0;
+}
+
+.no-margin {
+  margin:0;
+}
+
+[data-object="drag-handler"] {
+  background-color: #efefef;
+  cursor:pointer;
+  padding: 7px 10px;
+}
+
+ul.dragable, ul.nondragable {
+  padding: 0;
+  margin: 0;
+}
+
+ul.dragable li, ul.nondragable li {
+  display:block;
+  background-color:#FFF;
+  list-style: none;
+  padding:0;
+  margin:0;
+}
+
+.functions-header {
+  padding-top: 10px;
+  margin-left: -35px;
+}
+
+.corrections-table {width:90%;}
+
